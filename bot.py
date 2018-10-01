@@ -25,7 +25,7 @@ class Codix(commands.Bot):
         super().__init__(command_prefix=_prefix_callable,
                          description=description, pm_help=None)
 
-        self.db_con = sqlite3.connect("database.db")
+        # self.db_con = sqlite3.connect("database.db")
         self.config = config
 
         for extension in extensions:
@@ -37,7 +37,7 @@ class Codix(commands.Bot):
 
     async def on_ready(self):
         print(f'Logged in as {self.user.name} ; ID : {self.user.id}')
-        print('-----------------------------------------------\n')
+        print('-------------------------------------------\n')
         await self.change_presence(status=3,
                                    activity=discord.Game(name=f'Git mode'))
 
