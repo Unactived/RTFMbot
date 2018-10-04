@@ -20,7 +20,7 @@ def _prefix_callable(bot, message):
     return base
 
 
-class Codix(commands.Bot):
+class RTFM(commands.Bot):
     def __init__(self, config):
         super().__init__(command_prefix=_prefix_callable,
                          description=description, pm_help=None)
