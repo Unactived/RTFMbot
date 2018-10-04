@@ -3,6 +3,7 @@ import urllib.parse
 import discord
 from discord.ext import commands
 from bs4 import BeautifulSoup
+from bs4.element import NavigableString
 from datetime import datetime
 from string import ascii_uppercase
 import random
@@ -143,6 +144,26 @@ class Search:
     async def manpage(self, ctx, *, text: str):
         """Returns the manual's page for a linux command"""
 
+        def get_content(tag):
+            """Returns content between two h2 tags"""
+
+            bssiblings = tag.next_siblings
+            siblings = []
+            for elem in bssiblings:
+                # get only tag elements, before the next h2
+                # Putting away the comments, we know there's
+                # at least one after it.
+                if type(elem) == NavigableString:
+                    continue
+                # It's a tag
+                if tag.get('name') == 'h2':
+                    break
+                siblings.append(elem.text)
+
+            return '\n'.join(siblings)
+
+
+
         base_url = f'https://man.cx/{text}'
         url = urllib.parse.quote_plus(base_url, safe=';/?:@&=$,><-[]')
 
@@ -154,22 +175,26 @@ class Search:
 
                     soup = BeautifulSoup(await response.text(), 'lxml')
 
-                    if 'Search results' in soup.find('h2').text:
-                        # We didn't find a man page.
+                    nameTag = soup.find('h2', string='NAME\n')
+
+                    if not nameTag:
+                        # No NAME, no page
                         return await ctx.send(f'No manual entry for `{text}`. (Debian)')
 
-                    # That's some bad HTML scraping
-                    title = soup.find('h2', text='NAME\n').next_sibling.next_sibling.string.replace('\n', ' ')
+                    # Get the three (or less) first parts from the nav aside
+                    # The first one is NAME, we already have it in nameTag
+                    contents = soup.find_all('nav', limit=2)[1].find_all('li', limit=4)[1:]
 
-                    # Really bad
-                    synopsis = soup.find('table').contents[1].contents[3].contents[1].text
+                    if contents[-1].string == 'COMMENTS':
+                        contents.remove(-1)
 
-                    # I feel dead inside
-                    author = soup.find('h2', text=re.compile('AUTHOR')).next_sibling.next_sibling.string.replace('\n', ' ')
+                    title = get_content(nameTag)
 
                     emb = discord.Embed(title=title, url=f'https://man.cx/{text}', author='Linux man pages')
-                    emb.add_field(name="SYNOPSIS", value=synopsis, inline=False)
-                    emb.add_field(name="AUTHOR", value=author, inline=False)
+
+                    for tag in contents:
+                        h2 = tuple(soup.find(attrs={'name': tuple(tag.children)[0].get('href')[1:]}).parents)[0]
+                        emb.add_field(name=tag.string, value=get_content(h2))
 
                     await ctx.send(embed=emb)
 
