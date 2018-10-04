@@ -61,7 +61,7 @@ class Search:
                     if response.status != 200:
                         return await ctx.send('An error occurred (status code: {response.status}). Retry later.')
 
-                    soup = BeautifulSoup(str(await response.text()), 'html.parser')
+                    soup = BeautifulSoup(str(await response.text()), 'lxml')
 
                     def soup_match(tag):
                         return all(string in tag.text for string in text.strip().split()) and tag.name == 'li'
@@ -80,7 +80,7 @@ class Search:
 
                     await ctx.send(embed=emb)
 
-    @commands.command(aliases=['cdoc'])
+    @commands.command(aliases=['cdoc', 'c++doc'])
     async def cppdoc(self, ctx, *, text: str):
         """Search something on cppreference"""
 
@@ -93,10 +93,7 @@ class Search:
                     if response.status != 200:
                         return await ctx.send('An error occurred (status code: {response.status}). Retry later.')
 
-                    # if len(response.history) > 0:
-                    #     return await ctx.send(response.url)
-
-                    soup = BeautifulSoup(await response.text(), 'html.parser')
+                    soup = BeautifulSoup(await response.text(), 'lxml')
 
                     uls = soup.find_all('ul', class_='mw-search-results')
 
@@ -115,14 +112,66 @@ class Search:
                             links = elem.find_all('a', limit=10)
                             break
 
-                    emb = discord.Embed(title=f"{language} docs")
-
                     content = [f"[{a.string}](https://en.cppreference.com/{a.get('href')})" for a in links]
-
+                    emb = discord.Embed(title=f"{language} docs")
                     emb.add_field(name=f'Results for `{text}` :', value='\n'.join(content), inline=False)
 
                     await ctx.send(embed=emb)
 
+    # @commands.command(aliases=['ddg'])
+    # async def duckduckgo(self, ctx, *, text: str):
+    #     """Search something on DuckDuckGo engine"""
+
+    #     base_url = "https://duckduckgo.com/?q="
+    #     base_url += text + "&t=ffab&ia=web"
+
+    #     url = urllib.parse.quote_plus(base_url, safe=';/?:@&=$,><-[]')
+
+    #     async with ctx.typing():
+    #         async with aiohttp.ClientSession() as client_session:
+    #             async with client_session.get(url) as response:
+    #                 if response.status != 200:
+    #                     return await ctx.send('An error occurred (status code: {response.status}). Retry later.')
+
+    #                 soup = BeautifulSoup(await response.text(), 'lxml')
+
+    # @commands.command()
+    # async def gitdoc(self, ctx, *, text: str):
+    #     """"""
+
+    @commands.command(aliases=['man'])
+    async def manpage(self, ctx, *, text: str):
+        """Returns the manual's page for a linux command"""
+
+        base_url = f'https://man.cx/{text}'
+        url = urllib.parse.quote_plus(base_url, safe=';/?:@&=$,><-[]')
+
+        async with ctx.typing():
+            async with aiohttp.ClientSession() as client_session:
+                async with client_session.get(url) as response:
+                    if response.status != 200:
+                        return await ctx.send('An error occurred (status code: {response.status}). Retry later.')
+
+                    soup = BeautifulSoup(await response.text(), 'lxml')
+
+                    if 'Search results' in soup.find('h2').text:
+                        # We didn't find a man page.
+                        return await ctx.send(f'No manual entry for `{text}`. (Debian)')
+
+                    # That's some bad HTML scraping
+                    title = soup.find('h2', text='NAME\n').next_sibling.next_sibling.string.replace('\n', ' ')
+
+                    # Really bad
+                    synopsis = soup.find('table').contents[1].contents[3].contents[1].text
+
+                    # I feel dead inside
+                    author = soup.find('h2', text=re.compile('AUTHOR')).next_sibling.next_sibling.string.replace('\n', ' ')
+
+                    emb = discord.Embed(title=title, url=f'https://man.cx/{text}', author='Linux man pages')
+                    emb.add_field(name="SYNOPSIS", value=synopsis, inline=False)
+                    emb.add_field(name="AUTHOR", value=author, inline=False)
+
+                    await ctx.send(embed=emb)
 
 def setup(bot):
     bot.add_cog(Search(bot))
