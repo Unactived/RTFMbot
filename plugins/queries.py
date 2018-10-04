@@ -12,7 +12,7 @@ import stackexchange as se
 
 class Search:
     def __init__(self, bot):
-        pass
+        self.bot = bot
 
     @commands.command(aliases=['se'])
     async def stack(self, ctx, *, text: str):
@@ -24,7 +24,7 @@ class Search:
             await ctx.send(f"{siteName} does not appear to be in the StackExchange network."
                 " Check the case and the spelling.")
 
-        site = se.Site(getattr(se, siteName))
+        site = se.Site(getattr(se, siteName), self.bot.config['SE_KEY'])
         site.impose_throttling = True
         site.throttle_stop = False
 
