@@ -156,11 +156,14 @@ class Search:
                 if type(elem) == NavigableString:
                     continue
                 # It's a tag
-                if tag.get('name') == 'h2':
+                if elem.name == 'h2':
                     break
                 siblings.append(elem.text)
+            content = '\n'.join(siblings)
+            if len(content) >= 1024:
+                content = content[:1021] + '...'
 
-            return '\n'.join(siblings)
+            return content
 
 
 
@@ -183,7 +186,7 @@ class Search:
 
                     # Get the three (or less) first parts from the nav aside
                     # The first one is NAME, we already have it in nameTag
-                    contents = soup.find_all('nav', limit=2)[1].find_all('li', limit=4)[1:]
+                    contents = soup.find_all('nav', limit=2)[1].find_all('li', limit=3)[1:]
 
                     if contents[-1].string == 'COMMENTS':
                         contents.remove(-1)
