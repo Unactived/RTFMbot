@@ -6,6 +6,9 @@ class Owner:
     def __init__(self, bot):
         self.bot = bot
 
+    async def __local_check(self, ctx):
+        return await self.bot.is_owner(ctx.author)
+
     @commands.command(aliases=['streaming', 'listening', 'watching'], hidden=True)
     async def playing(self, ctx, media=""):
         """Update bot presence accordingly to invoke command"""

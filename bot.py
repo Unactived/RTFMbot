@@ -6,11 +6,10 @@ from discord.ext import commands
 
 # import utils
 
-description = """A discord bot to help you in your daily programming discord life"""
-
 extensions = (
     'plugins.owner',
-    'plugins.queries'
+    'plugins.queries',
+    'plugins.misc'
 )
 
 def _prefix_callable(bot, message):
@@ -18,6 +17,8 @@ def _prefix_callable(bot, message):
     # current = utils.get_guild_attr(message.guild, 'prefix')
     # base.append(current)
     return base
+
+description = "A discord bot to help you in your daily programming discord life"
 
 
 class RTFM(commands.Bot):
@@ -43,6 +44,11 @@ class RTFM(commands.Bot):
 
     async def on_resumed(self):
         print(f'\n[*] {self.user} resumed...')
+
+    async def on_message(self, message):
+        if message.author.bot:
+            return
+        await self.process_commands(message)
 
     # async def on_guild_join(self, guild):
     #     try:
