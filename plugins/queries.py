@@ -6,6 +6,7 @@ from bs4 import BeautifulSoup
 from bs4.element import NavigableString
 from datetime import datetime
 from string import ascii_uppercase
+from functools import reduce
 import random
 import re
 from pytio import Tio
@@ -120,27 +121,6 @@ class Search:
 
                     await ctx.send(embed=emb)
 
-    # @commands.command(aliases=['ddg'])
-    # async def duckduckgo(self, ctx, *, text: str):
-    #     """Search something on DuckDuckGo engine"""
-
-    #     base_url = "https://duckduckgo.com/?q="
-    #     base_url += text + "&t=ffab&ia=web"
-
-    #     url = urllib.parse.quote_plus(base_url, safe=';/?:@&=$,><-[]')
-
-    #     async with ctx.typing():
-    #         async with aiohttp.ClientSession() as client_session:
-    #             async with client_session.get(url) as response:
-    #                 if response.status != 200:
-    #                     return await ctx.send('An error occurred (status code: {response.status}). Retry later.')
-
-    #                 soup = BeautifulSoup(await response.text(), 'lxml')
-
-    # @commands.command()
-    # async def gitdoc(self, ctx, *, text: str):
-    #     """"""
-
     @commands.command(aliases=['man'])
     async def manpage(self, ctx, *, text: str):
         """Returns the manual's page for a linux command"""
@@ -207,7 +187,8 @@ class Search:
 
     @commands.command()
     async def run(self, ctx, lang, *, text: str):
-        print(text)
+        """Execute on a distant server and print results of a code in a given language"""
+        
         language = lang.strip('`').lower()
         code = text.strip('`').strip('``')
 
@@ -243,6 +224,24 @@ class Search:
 
         await ctx.send(embed=emb)
 
+    @commands.command()
+    async def runlist(self, ctx):
+        """Give available languages for run command"""
+
+        # Exceeds 6000 characters for the Embed
+
+        # languages = Tio().query_languages()
+        # result = "'{}'".format("`, `".join(languages))
+
+        # emb = discord.Embed(title="Available languages for run command",
+        #     description=f'`{result}`')
+
+        # await ctx.send(embed=emb)
+
+        emb = discord.Embed(title="Available languages for run command")
+        emb.add_field(name="Doesn't fit here", value="[See yourself](https://tio.run/#)")
+
+        await ctx.send(embed=emb)
 
 def setup(bot):
     bot.add_cog(Search(bot))
