@@ -8,6 +8,7 @@ from datetime import datetime
 from string import ascii_uppercase
 import random
 import re
+from pytio import Tio
 
 import stackexchange as se
 
@@ -203,6 +204,45 @@ class Search:
                         emb.add_field(name=tag.string, value=get_content(h2))
 
                     await ctx.send(embed=emb)
+
+    @commands.command()
+    async def run(self, ctx, lang, *, text: str):
+        print(text)
+        language = lang.strip('`').lower()
+        code = text.strip('`').strip('``')
+
+        firstLine = code.splitlines()[0]
+        if re.fullmatch(r'( |[0-9A-z]*)\b', firstLine):
+            code = code[len(firstLine)+1:]
+
+        site = Tio()
+        req = site.new_request(language, code)
+        res = site.send(req)
+        
+        if res.result == f"The language '{language}' could not be found on the server.\n":
+            return await ctx.send(f"`{language}` isn't available. For a list of available"
+                f"programming languages, do `{self.bot.config['PREFIX']}runlist`")
+
+        if res.result:
+            colour = self.bot.config['GREEN']
+        elif res.error:
+            colour = self.bot.config['RED']
+        else:
+            await ctx.send('No output')
+
+        emb = discord.Embed(title=language, colour=colour)
+        emb.set_footer(text="Powered by tio.run")
+
+        # ph, as placeholder, prevents Discord from taking the first line
+        # for a markdown
+        if res.result:
+            emb.add_field(name="Output", value=f"```ph\n{res.result}```")
+        if res.error:
+            emb.add_field(name="Error", value=f"```ph\n{res.error}```")
+
+
+        await ctx.send(embed=emb)
+
 
 def setup(bot):
     bot.add_cog(Search(bot))
