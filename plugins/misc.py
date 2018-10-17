@@ -1,3 +1,4 @@
+import os
 import discord
 from discord.ext import commands
 
@@ -15,7 +16,8 @@ class Misc:
         [Report a bug](https://github.com/FrenchMasterSword/RTFMbot/issues "Open an issue")\n'
 
         info = await self.bot.application_info()
-        file = discord.File("icon.png", "RTFM_logo.png")
+        path = os.path.join(".", "icon.png")
+        file = discord.File(path, "RTFM_logo.png")
 
         emb = discord.Embed(title=f"{info.name} card", colour=self.bot.config['BLURPLE'],
             description=info.description)
