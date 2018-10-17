@@ -15,13 +15,15 @@ class Misc:
         links = f'[Invite me to your server](https://discordapp.com/api/oauth2/authorize?client_id={self.bot.user.id}&permissions=108514369&scope=bot "You need manage server permission")\n\
         [Report a bug](https://github.com/FrenchMasterSword/RTFMbot/issues "Open an issue")'
 
+        file = discord.File("icon.png", "RTFM logo")
+
         emb = discord.Embed(title="RTFM boring stuff",
             description=description)
 
-        emb.set_thumbnail(url='http://imgur.com/a/OkVOSwf')
+        emb.set_image(url='attachment://icon.png')
         emb.add_field(name='Links', value=links)
 
-        await ctx.send(embed=emb)
+        await ctx.send(file=file, embed=emb)
 
 def setup(bot):
     bot.add_cog(Misc(bot))

@@ -1,10 +1,15 @@
 import traceback
+import io
+import os
+import textwrap
+from contextlib import redirect_stdout
 import discord
 from discord.ext import commands
 
 class Owner:
     def __init__(self, bot):
         self.bot = bot
+        self._last_eval_result = None
 
     async def __local_check(self, ctx):
         return await self.bot.is_owner(ctx.author)
@@ -56,6 +61,17 @@ class Owner:
         """Kills process"""
         await self.bot.logout()
 
+    @commands.command(hidden=True)
+    async def cogupdate(self, ctx):
+        """Fetches and update cogs from github repo"""
+        os.system(f'./cogupdate.sh')
+
+    @commands.command(hidden=True)
+    async def restart(self, ctx):
+        """Restarts bot"""
+        await self.bot.logout()
+        os.system("python3.6 RTFMbot/launcher.py")
+
     @commands.guild_only()
     @commands.command(hidden=True)
     async def sayin(self, ctx, channel: discord.TextChannel, *, text: str):
@@ -66,6 +82,61 @@ class Owner:
     async def say(self, ctx, *, text: str):
         """Makes the bot say something in the current channel"""
         await ctx.send(text)
+
+    def _clean_code(self, code):
+        # Markdown py ; not python
+        if code.startswith('```') and code.endswith('```'):
+            return '\n'.join(code.split('\n')[1:-1])
+        return code.strip('`\n')
+
+    @commands.is_owner()
+    @commands.command(name='eval', hidden=True)
+    async def _eval(self, ctx, *, code: str):
+        """Eval some code"""
+
+        env = {
+            'bot': self.bot,
+            'ctx': ctx,
+            'guild': ctx.guild,
+            'channel': ctx.channel,
+            'author': ctx.author,
+            'message': ctx.message,
+            '_': self._last_eval_result
+        }
+        env.update(globals())
+
+        code = self._clean_code(code)
+        buffer = io.StringIO()
+
+        # function placeholder
+        to_compile = f'async def foo():\n{textwrap.indent(code, " ")}'
+
+        try:
+            exec(to_compile, env)
+        except Exception as e:
+            return await ctx.send(f'```py\n{e.__class__.__name__}: {e}\n``')
+
+        foo = env['foo']
+        try:
+            with redirect_stdout(buffer):
+                ret = await foo()
+        except Exception:
+            value = buffer.getvalue()
+            await ctx.send(f'```py\n{value}{traceback.format_exc()}\n```')
+        else:
+            value = buffer.getvalue()
+            try:
+                await ctx.message.add_reaction('\N{INCOMING ENVELOPE}')
+            except Exception:
+                # well...
+                pass
+
+            if ret is None:
+                if value is not None:
+                    await ctx.send(f'```py\n{value}\n```')
+                else:
+                    self._last_result = ret
+                    await ctx.send(f'```py\n{value}{ret}\n```')
 
 def setup(bot):
     bot.add_cog(Owner(bot))
