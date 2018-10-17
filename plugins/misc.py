@@ -9,18 +9,20 @@ class Misc:
     async def info(self, ctx):
         """Print some info and useful links about the bot"""
 
-        description = "A discord bot to help you in your daily programming discord life"
-
         # Sadly I couldn't break this line
         links = f'[Invite me to your server](https://discordapp.com/api/oauth2/authorize?client_id={self.bot.user.id}&permissions=108514369&scope=bot "You need manage server permission")\n\
-        [Report a bug](https://github.com/FrenchMasterSword/RTFMbot/issues "Open an issue")'
+        [Source code](https://github.com/FrenchMasterSword/RTFMbot/issues "Leave a ⭐")\n\
+        [Report a bug](https://github.com/FrenchMasterSword/RTFMbot/issues "Open an issue")\n'
 
-        file = discord.File("icon.png", "RTFM logo")
+        info = await self.bot.application_info()
+        file = discord.File("icon.png", "RTFM_logo.png")
 
-        emb = discord.Embed(title="RTFM boring stuff",
-            description=description)
+        emb = discord.Embed(title=f"{info.name} card", colour=self.bot.config['BLURPLE'],
+            description=info.description)
 
-        emb.set_image(url='attachment://icon.png')
+        emb.set_thumbnail(url='attachment://RTFM_logo.png')
+        emb.set_footer(text= f"Coded in Python 3 by {info.owner.name}", 
+            icon_url=info.owner.avatar_url)
         emb.add_field(name='Links', value=links)
 
         await ctx.send(file=file, embed=emb)
