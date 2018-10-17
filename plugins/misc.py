@@ -16,7 +16,7 @@ class Misc:
         [Report a bug](https://github.com/FrenchMasterSword/RTFMbot/issues "Open an issue")\n'
 
         info = await self.bot.application_info()
-        path = os.path.join(".", "icon.png")
+        path = os.path.join("./RTFMbot", "icon.png")
         file = discord.File(path, "RTFM_logo.png")
 
         emb = discord.Embed(title=f"{info.name} card", colour=self.bot.config['BLURPLE'],
