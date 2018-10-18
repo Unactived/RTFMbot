@@ -1,4 +1,4 @@
-    # RTFM
+# RTFM
 
 RTFM is a discord bot created to help you as a programmer directly from Discord
 It provides some helpful tools:
