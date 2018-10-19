@@ -9,7 +9,8 @@ from discord.ext import commands
 extensions = (
     'plugins.owner',
     'plugins.queries',
-    'plugins.misc'
+    'plugins.misc',
+    'plugins.tools'
 )
 
 def _prefix_callable(bot, message):
