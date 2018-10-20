@@ -23,32 +23,24 @@ class Tools:
 
     @commands.command()
     async def byteconvert(self, ctx, value: int, unit='Mio'):
-        """Shows byte convertions of given value"""
+        """Shows byte conversions of given value"""
 
-        units = ('O', 'Kio', 'Mio', 'Gio', 'Tio', 'Pio', 'Eio', 'Zio', 'Yio')
+        units = ('o', 'Kio', 'Mio', 'Gio', 'Tio', 'Pio', 'Eio', 'Zio', 'Yio')
         unit = unit.capitalize()
 
-        if not unit in units:
-            return await ctx.send(f"Avaliable units are `{'`, `'.join(units)}`.")
+        if not unit in units and unit != 'O':
+            return await ctx.send(f"Available units are `{'`, `'.join(units)}`.")
 
         # value = int(value)
 
-        emb = discord.Embed(title="Binary convertions")
+        emb = discord.Embed(title="Binary conversions")
         index = units.index(unit)
         
         for i,u in enumerate(units):
-            result = value / 2**(i-index)
+            result = round(value / 2**((i-index)*10), 14)
             emb.add_field(name=u, value=result)
 
         await ctx.send(embed=emb)
-
-    # @commands.command()
-    # async def baseconvert(self, ctx, value):
-    #     """Shows base convertions of given integer value"""
-
-    #     pass
-
-
 
 def setup(bot):
     bot.add_cog(Tools(bot))
