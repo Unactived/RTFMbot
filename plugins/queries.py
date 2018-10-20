@@ -207,8 +207,9 @@ class Search:
 
         output = res.result.decode('utf-8')
         cleaned = re.sub(re.escape(output[:16]), '', output)
-        if len(cleaned) > 1994:
-            cleaned = cleaned[1991:] + '...'
+        if len(cleaned) > 1991:
+            # Mustn't exceed 2000 characters, counting ` and ph\n characters
+            cleaned = cleaned[:1988] + '...'
 
         # ph, as placeholder, prevents Discord from taking the first line
         await ctx.send(f'```ph\n{cleaned}```')
