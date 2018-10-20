@@ -18,12 +18,10 @@ class Search:
         self.bot = bot
 
     @commands.command(aliases=['se'])
-    async def stack(self, ctx, *, text: str):
-        """Queries StackOverflow and gives you top results"""
+    async def stack(self, ctx, siteName, *, text: str):
+        """Queries given StackExchange website and gives you top results"""
 
-        siteName = text.split()[0]
-
-        if not siteName in dir(se):
+        if siteName[0].islower() or not siteName in dir(se):
             await ctx.send(f"{siteName} does not appear to be in the StackExchange network."
                 " Check the case and the spelling.")
 
@@ -32,8 +30,7 @@ class Search:
         site.throttle_stop = False
 
         async with ctx.typing():
-            terms = text[text.find(' ')+1:]
-            qs = site.search(intitle=terms)[:3]
+            qs = site.search(intitle=text)[:3]
             if qs:
                 emb = discord.Embed(title=text)
                 emb.set_thumbnail(url=f'http://s2.googleusercontent.com/s2/favicons?domain_url={site.domain}')
