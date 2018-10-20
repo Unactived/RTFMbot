@@ -9,9 +9,13 @@ from string import ascii_uppercase
 from functools import reduce
 import random
 import re
-from pytio import Tio
-
 import stackexchange as se
+# from pytio import Tio, TioRequest
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+from _tio import Tio, TioRequest
+
 
 class Search:
     def __init__(self, bot):
@@ -194,32 +198,40 @@ class Search:
             code = code[len(firstLine)+1:]
 
         site = Tio()
-        req = site.new_request(language, code)
+        req = TioRequest(language, code)
         res = site.send(req)
         
         if res.result == f"The language '{language}' could not be found on the server.\n":
             return await ctx.send(f"`{language}` isn't available. For a list of available"
                 f"programming languages, do `{self.bot.config['PREFIX']}runlist`")
 
-        if res.result:
-            colour = self.bot.config['GREEN']
-        elif res.error:
-            colour = self.bot.config['RED']
-        else:
-            await ctx.send('No output')
-
-        emb = discord.Embed(title=language, colour=colour)
-        emb.set_footer(text="Powered by tio.run")
+        output = res.result.decode('utf-8')
+        cleaned = re.sub(re.escape(output[:16]), '', output)
+        if len(cleaned) > 1994:
+            cleaned = cleaned[1991:] + '...'
 
         # ph, as placeholder, prevents Discord from taking the first line
-        # for a markdown
-        if res.result:
-            emb.add_field(name="Output", value=f"```ph\n{res.result}```")
-        if res.error:
-            emb.add_field(name="Error", value=f"```ph\n{res.error}```")
+        await ctx.send(f'```ph\n{cleaned}```')
+
+        # if res.result:
+        #     colour = self.bot.config['GREEN']
+        # elif res.error:
+        #     colour = self.bot.config['RED']
+        # else:
+        #     await ctx.send('No output')
+
+        # emb = discord.Embed(title=language, colour=colour)
+        # emb.set_footer(text="Powered by tio.run")
+
+        # # ph, as placeholder, prevents Discord from taking the first line
+        # # for a markdown
+        # if res.result:
+        #     emb.add_field(name="Output", value=f"```ph\n{res.result}```")
+        # if res.error:
+        #     emb.add_field(name="Error", value=f"```ph\n{res.error}```")
 
 
-        await ctx.send(embed=emb)
+        # await ctx.send(embed=emb)
 
     @commands.command()
     async def runlist(self, ctx):
