@@ -15,6 +15,7 @@ import sys
 import os
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from _tio import Tio, TioRequest
+import _ref
 
 
 class Search:
@@ -95,7 +96,7 @@ class Search:
             async with aiohttp.ClientSession() as client_session:
                 async with client_session.get(url) as response:
                     if response.status != 200:
-                        return await ctx.send('An error occurred (status code: {response.status}). Retry later.')
+                        return await ctx.send(f'An error occurred (status code: {response.status}). Retry later.')
 
                     soup = BeautifulSoup(await response.text(), 'lxml')
 
@@ -189,6 +190,7 @@ class Search:
     @commands.command()
     async def run(self, ctx, lang, *, text: str):
         """Execute on a distant server and print results of a code in a given language"""
+        # Powered by tio.run
         
         language = lang.strip('`').lower()
         code = text.strip('`').strip('``')
@@ -249,9 +251,21 @@ class Search:
         # await ctx.send(embed=emb)
 
         emb = discord.Embed(title="Available languages for run command")
-        emb.add_field(name="Doesn't fit here", value="[See yourself](https://tio.run/#)")
+        emb.add_field(name="Doesn't fit here", value="[See yourself](https://hastebin.com/raw/itasidumeq)")
 
         await ctx.send(embed=emb)
+
+    @commands.command(name='ref')
+    async def reference(self, ctx, lang, *, text: str):
+        """Returns element reference from given language"""
+
+        langs = {"html5": _ref.htmlref}
+
+        if not lang.lower() in langs:
+            return await ctx.send(f"{lang} not available. Avaiable ones are `{'`, `'.join(langs)}`")
+
+        await langs[lang.lower()](ctx, text)
+
 
 def setup(bot):
     bot.add_cog(Search(bot))
