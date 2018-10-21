@@ -4,6 +4,7 @@ import os
 import textwrap
 from contextlib import redirect_stdout
 import discord
+from yaml import load as yaml_load
 from discord.ext import commands
 
 class Owner:
@@ -22,6 +23,20 @@ class Owner:
             media = f"{self.bot.config['PREFIX']}info | {self.bot.config['PREFIX']}help"
         p_types = {'playing': 0, 'streaming': 1, 'listening': 2, 'watching': 3}
         activity = discord.Activity(name=media, type=p_types[ctx.invoked_with])
+
+        # Keep trace of it
+
+        with open('../config.yml', 'r') as file:
+            stuff = file.read().splitlines()
+
+        stuff[-1] = f"STATUS_TYPE: '{p_types[ctx.invoked_with]}'"
+        stuff[-2] = f"STATUS: '{media}'"
+
+        with open('../config.yml', 'w') as file:
+            file.write('\n'.join(stuff))
+
+        with open('config.yml', 'r') as file:
+            self.bot.config = yaml_load(file)
 
         await self.bot.change_presence(activity=activity)
 

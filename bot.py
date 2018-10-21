@@ -40,8 +40,8 @@ class RTFM(commands.Bot):
     async def on_ready(self):
         print(f'Logged in as {self.user.name} ; ID : {self.user.id}')
         print('-------------------------------------------\n')
-        await self.change_presence(status=3,
-                                   activity=discord.Game(name=f'Git mode'))
+        await self.change_presence(status=self.config['STATUS_TYPE'],
+                                   activity=discord.Game(name=self.config['STATUS']))
 
     async def on_resumed(self):
         print(f'\n[*] {self.user} resumed...')
