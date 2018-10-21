@@ -26,13 +26,13 @@ class Owner:
 
         # Keep trace of it
 
-        with open('../config.yml', 'r') as file:
+        with open('config.yml', 'r') as file:
             stuff = file.read().splitlines()
 
         stuff[-1] = f"STATUS_TYPE: '{p_types[ctx.invoked_with]}'"
         stuff[-2] = f"STATUS: '{media}'"
 
-        with open('../config.yml', 'w') as file:
+        with open('config.yml', 'w') as file:
             file.write('\n'.join(stuff))
 
         with open('config.yml', 'r') as file:
