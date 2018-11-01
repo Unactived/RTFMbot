@@ -259,12 +259,20 @@ class Search:
     async def reference(self, ctx, lang, *, text: str):
         """Returns element reference from given language"""
 
-        langs = {"html5": _ref.htmlref}
+        lang = lang.strip('`')
+
+        langs = {
+            "html5": _ref.html_ref,
+            "http-headers": _ref.http_headers,
+            "http-methods": _ref.http_methods,
+            "http-status-codes": _ref.http_status,
+            "csp-directives": _ref.csp_directives
+        }
 
         if not lang.lower() in langs:
             return await ctx.send(f"{lang} not available. Avaiable ones are `{'`, `'.join(langs)}`")
 
-        await langs[lang.lower()](ctx, text)
+        await langs[lang.lower()](ctx, text.strip('`'))
 
 
 def setup(bot):

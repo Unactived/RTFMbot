@@ -31,8 +31,6 @@ class Tools:
         if not unit in units and unit != 'O':
             return await ctx.send(f"Available units are `{'`, `'.join(units)}`.")
 
-        # value = int(value)
-
         emb = discord.Embed(title="Binary conversions")
         index = units.index(unit)
         
