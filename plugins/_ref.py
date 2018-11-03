@@ -1,11 +1,12 @@
-import aiohttp
-import urllib.parse
 import html
+import urllib.parse
 import re
 from functools import partial
+
+import aiohttp
+import discord
 from bs4 import BeautifulSoup
 from bs4.element import NavigableString
-import discord
 
 def html_to_md(string):
     string = re.sub('<code>|</code>', '`', string)

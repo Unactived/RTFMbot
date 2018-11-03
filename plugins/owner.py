@@ -1,10 +1,11 @@
-import traceback
 import io
 import os
 import textwrap
+import traceback
 from contextlib import redirect_stdout
-import discord
 from yaml import load as yaml_load
+
+import discord
 from discord.ext import commands
 
 class Owner:

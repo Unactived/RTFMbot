@@ -1,16 +1,15 @@
 # Mainly from:
 # https://codereview.stackexchange.com/a/182926
-import platform
-import functools
-import zlib
 import gzip
 import io
 import json
+import zlib
+from functools import partial
 from typing import NamedTuple, AnyStr, Union, List, Optional, Any
-from urllib.request import urlopen
 from urllib.error import HTTPError, URLError
+from urllib.request import urlopen
 
-bytes_ = functools.partial(bytes, encoding='utf-8')
+bytes_ = partial(bytes, encoding='utf-8')
 
 _TioFile = NamedTuple(
     '_TioFile',
@@ -46,7 +45,7 @@ _TioResponse = NamedTuple(
 class TioFile(_TioFile):
     def as_bytes(self):
         content = self.content
-        if platform.python_version() >= '3.0' and isinstance(content, str):
+        if isinstance(content, str):
             length = len(content.encode('utf-8'))
         elif isinstance(content, (str, bytes, bytearray)):
             length = len(content)

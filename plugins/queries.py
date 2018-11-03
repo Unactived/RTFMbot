@@ -1,27 +1,33 @@
-import aiohttp
-import urllib.parse
-import discord
-from discord.ext import commands
-from bs4 import BeautifulSoup
-from bs4.element import NavigableString
-from datetime import datetime
-from string import ascii_uppercase
-from functools import reduce
+import os
 import random
 import re
+import sys
+import urllib.parse
+from datetime import datetime
+from functools import reduce
+from string import ascii_uppercase
+
+import aiohttp
+import discord
 import stackexchange as se
 # from pytio import Tio, TioRequest
-import sys
-import os
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-from _tio import Tio, TioRequest
-import _ref
+from bs4 import BeautifulSoup
+from bs4.element import NavigableString
+from discord.ext import commands
+from discord.ext.commands.cooldowns import BucketType
 
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+import _ref
+from _tio import Tio, TioRequest
 
 class Search:
     def __init__(self, bot):
         self.bot = bot
 
+    async def __before_invoke(self, ctx):
+        await ctx.trigger_typing()
+
+    @commands.cooldown(1, 5, BucketType.user)
     @commands.command(aliases=['se'])
     async def stack(self, ctx, siteName, *, text: str):
         """Queries given StackExchange website and gives you top results"""
@@ -34,24 +40,23 @@ class Search:
         site.impose_throttling = True
         site.throttle_stop = False
 
-        async with ctx.typing():
-            qs = site.search(intitle=text)[:3]
-            if qs:
-                emb = discord.Embed(title=text)
-                emb.set_thumbnail(url=f'http://s2.googleusercontent.com/s2/favicons?domain_url={site.domain}')
-                emb.set_footer(text="Hover for vote stats")
+        qs = site.search(intitle=text)[:3]
+        if qs:
+            emb = discord.Embed(title=text)
+            emb.set_thumbnail(url=f'http://s2.googleusercontent.com/s2/favicons?domain_url={site.domain}')
+            emb.set_footer(text="Hover for vote stats")
 
-                for q in qs:
-                    # Fetch question's data, include vote_counts and answers
-                    q = site.question(q.id, filter="!b1MME4lS1P-8fK")
-                    emb.add_field(name=f"`{len(q.answers)} answers` Score : {q.score}",
-                                  value=f'[{q.title}](https://{site.domain}/q/{q.id}'
-                                        f' "{q.up_vote_count}🔺|{q.down_vote_count}🔻")',
-                                  inline=False)
+            for q in qs:
+                # Fetch question's data, include vote_counts and answers
+                q = site.question(q.id, filter="!b1MME4lS1P-8fK")
+                emb.add_field(name=f"`{len(q.answers)} answers` Score : {q.score}",
+                              value=f'[{q.title}](https://{site.domain}/q/{q.id}'
+                                    f' "{q.up_vote_count}🔺|{q.down_vote_count}🔻")',
+                              inline=False)
 
-                await ctx.send(embed=emb)
-            else:
-                await ctx.send("No results")
+            await ctx.send(embed=emb)
+        else:
+            await ctx.send("No results")
 
     @commands.command()
     async def pythondoc(self, ctx, *, text: str):
@@ -60,30 +65,29 @@ class Search:
         url = "https://docs.python.org/3/genindex-all.html"
         alphabet = '_' + ascii_uppercase
 
-        async with ctx.typing():
-            async with aiohttp.ClientSession() as client_session:
-                async with client_session.get(url) as response:
-                    if response.status != 200:
-                        return await ctx.send('An error occurred (status code: {response.status}). Retry later.')
+        async with aiohttp.ClientSession() as client_session:
+            async with client_session.get(url) as response:
+                if response.status != 200:
+                    return await ctx.send('An error occurred (status code: {response.status}). Retry later.')
 
-                    soup = BeautifulSoup(str(await response.text()), 'lxml')
+                soup = BeautifulSoup(str(await response.text()), 'lxml')
 
-                    def soup_match(tag):
-                        return all(string in tag.text for string in text.strip().split()) and tag.name == 'li'
+                def soup_match(tag):
+                    return all(string in tag.text for string in text.strip().split()) and tag.name == 'li'
 
-                    elements = soup.find_all(soup_match, limit=10)
-                    links = [tag.select_one("li > a") for tag in elements]
-                    links = [link for link in links if link is not None]
+                elements = soup.find_all(soup_match, limit=10)
+                links = [tag.select_one("li > a") for tag in elements]
+                links = [link for link in links if link is not None]
 
-                    if not links:
-                        return await ctx.send("No results")
+                if not links:
+                    return await ctx.send("No results")
 
-                    content = [f"[{a.string}](https://docs.python.org/3/{a.get('href')})" for a in links]
+                content = [f"[{a.string}](https://docs.python.org/3/{a.get('href')})" for a in links]
 
-                    emb = discord.Embed(title="Python 3 docs")
-                    emb.add_field(name=f'Results for `{text}` :', value='\n'.join(content), inline=False)
+                emb = discord.Embed(title="Python 3 docs")
+                emb.add_field(name=f'Results for `{text}` :', value='\n'.join(content), inline=False)
 
-                    await ctx.send(embed=emb)
+                await ctx.send(embed=emb)
 
     @commands.command(aliases=['cdoc', 'c++doc'])
     async def cppdoc(self, ctx, *, text: str):
@@ -92,36 +96,35 @@ class Search:
         base_url = 'https://cppreference.com/w/cpp/index.php?title=Special:Search&search=' + text
         url = urllib.parse.quote_plus(base_url, safe=';/?:@&=$,><-[]')
 
-        async with ctx.typing():
-            async with aiohttp.ClientSession() as client_session:
-                async with client_session.get(url) as response:
-                    if response.status != 200:
-                        return await ctx.send(f'An error occurred (status code: {response.status}). Retry later.')
+        async with aiohttp.ClientSession() as client_session:
+            async with client_session.get(url) as response:
+                if response.status != 200:
+                    return await ctx.send(f'An error occurred (status code: {response.status}). Retry later.')
 
-                    soup = BeautifulSoup(await response.text(), 'lxml')
+                soup = BeautifulSoup(await response.text(), 'lxml')
 
-                    uls = soup.find_all('ul', class_='mw-search-results')
+                uls = soup.find_all('ul', class_='mw-search-results')
 
-                    if not len(uls):
-                        return await ctx.send('No results')
+                if not len(uls):
+                    return await ctx.send('No results')
 
-                    if ctx.invoked_with == 'cdoc':
-                        wanted = 'w/c/'
-                        language = 'C'
-                    else:
-                        wanted = 'w/cpp/'
-                        language = 'C++'
+                if ctx.invoked_with == 'cdoc':
+                    wanted = 'w/c/'
+                    language = 'C'
+                else:
+                    wanted = 'w/cpp/'
+                    language = 'C++'
 
-                    for elem in uls:
-                        if wanted in elem.select_one("a").get('href'):
-                            links = elem.find_all('a', limit=10)
-                            break
+                for elem in uls:
+                    if wanted in elem.select_one("a").get('href'):
+                        links = elem.find_all('a', limit=10)
+                        break
 
-                    content = [f"[{a.string}](https://en.cppreference.com/{a.get('href')})" for a in links]
-                    emb = discord.Embed(title=f"{language} docs")
-                    emb.add_field(name=f'Results for `{text}` :', value='\n'.join(content), inline=False)
+                content = [f"[{a.string}](https://en.cppreference.com/{a.get('href')})" for a in links]
+                emb = discord.Embed(title=f"{language} docs")
+                emb.add_field(name=f'Results for `{text}` :', value='\n'.join(content), inline=False)
 
-                    await ctx.send(embed=emb)
+                await ctx.send(embed=emb)
 
     @commands.command(aliases=['man'])
     async def manpage(self, ctx, *, text: str):
@@ -153,39 +156,38 @@ class Search:
         base_url = f'https://man.cx/{text}'
         url = urllib.parse.quote_plus(base_url, safe=';/?:@&=$,><-[]')
 
-        async with ctx.typing():
-            async with aiohttp.ClientSession() as client_session:
-                async with client_session.get(url) as response:
-                    if response.status != 200:
-                        return await ctx.send('An error occurred (status code: {response.status}). Retry later.')
+        async with aiohttp.ClientSession() as client_session:
+            async with client_session.get(url) as response:
+                if response.status != 200:
+                    return await ctx.send('An error occurred (status code: {response.status}). Retry later.')
 
-                    soup = BeautifulSoup(await response.text(), 'lxml')
+                soup = BeautifulSoup(await response.text(), 'lxml')
 
-                    nameTag = soup.find('h2', string='NAME\n')
+                nameTag = soup.find('h2', string='NAME\n')
 
-                    if not nameTag:
-                        # No NAME, no page
-                        return await ctx.send(f'No manual entry for `{text}`. (Debian)')
+                if not nameTag:
+                    # No NAME, no page
+                    return await ctx.send(f'No manual entry for `{text}`. (Debian)')
 
-                    # Get the three (or less) first parts from the nav aside
-                    # The first one is NAME, we already have it in nameTag
-                    contents = soup.find_all('nav', limit=2)[1].find_all('li', limit=3)[1:]
+                # Get the three (or less) first parts from the nav aside
+                # The first one is NAME, we already have it in nameTag
+                contents = soup.find_all('nav', limit=2)[1].find_all('li', limit=3)[1:]
 
-                    if contents[-1].string == 'COMMENTS':
-                        contents.remove(-1)
+                if contents[-1].string == 'COMMENTS':
+                    contents.remove(-1)
 
-                    title = get_content(nameTag)
+                title = get_content(nameTag)
 
-                    emb = discord.Embed(title=title, url=f'https://man.cx/{text}')
-                    emb.set_author(name='Debian Linux man pages',
-                        icon_url='https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/Openlogo-debianV2.'
-                        'svg/640px-Openlogo-debianV2.svg.png?1538755715969')
+                emb = discord.Embed(title=title, url=f'https://man.cx/{text}')
+                emb.set_author(name='Debian Linux man pages',
+                    icon_url='https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/Openlogo-debianV2.'
+                    'svg/640px-Openlogo-debianV2.svg.png?1538755715969')
 
-                    for tag in contents:
-                        h2 = tuple(soup.find(attrs={'name': tuple(tag.children)[0].get('href')[1:]}).parents)[0]
-                        emb.add_field(name=tag.string, value=get_content(h2))
+                for tag in contents:
+                    h2 = tuple(soup.find(attrs={'name': tuple(tag.children)[0].get('href')[1:]}).parents)[0]
+                    emb.add_field(name=tag.string, value=get_content(h2))
 
-                    await ctx.send(embed=emb)
+                await ctx.send(embed=emb)
 
     @commands.command()
     async def run(self, ctx, lang, *, text: str):
@@ -255,25 +257,33 @@ class Search:
 
         await ctx.send(embed=emb)
 
-    @commands.command(name='ref')
+    langs = {
+        "html5": _ref.html_ref,
+        "http-headers": _ref.http_headers,
+        "http-methods": _ref.http_methods,
+        "http-status-codes": _ref.http_status,
+        "csp-directives": _ref.csp_directives
+    }
+
+    @commands.command(aliases=['ref'])
     async def reference(self, ctx, lang, *, text: str):
         """Returns element reference from given language"""
 
         lang = lang.strip('`')
 
-        langs = {
-            "html5": _ref.html_ref,
-            "http-headers": _ref.http_headers,
-            "http-methods": _ref.http_methods,
-            "http-status-codes": _ref.http_status,
-            "csp-directives": _ref.csp_directives
-        }
+        if not lang.lower() in self.langs:
+            return await ctx.send(f"{lang} not available. See {self.bot.config['PREFIX']}reflist for available ones.")
 
-        if not lang.lower() in langs:
-            return await ctx.send(f"{lang} not available. Avaiable ones are `{'`, `'.join(langs)}`")
+        await self.langs[lang.lower()](ctx, text.strip('`'))
 
-        await langs[lang.lower()](ctx, text.strip('`'))
+    @commands.command()
+    async def reflist(self, ctx):
+        """Give available technos for reference command"""
 
+        emb = discord.Embed(title="Available technologies for reference command",
+            description=f"`{'`, `'.join(self.langs)}`")
+
+        await ctx.send(embed=emb)
 
 def setup(bot):
     bot.add_cog(Search(bot))
