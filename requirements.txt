@@ -4,3 +4,4 @@ discord.py==1.0.0a1580+g836ae73
 lxml==4.2.5
 py-stackexchange==2.2.7
 PyNaCl==1.2.1
+PyYAML==3.13
