@@ -13,7 +13,7 @@ class Tools:
 
     @commands.command()
     async def unascii(self, ctx, *, text: str):
-        """Reforms string from char code separated with ','"""
+        """Reforms string from char codes"""
 
         try:
             codes = [chr(int(i)) for i in text.split(' ')]
