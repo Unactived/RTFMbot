@@ -9,17 +9,17 @@ class Tools:
     async def ascii(self, ctx, *, text: str):
         """Returns number representation of characters in text"""
 
-        await ctx.send(','.join([str(ord(letter)) for letter in text.strip('``').strip('`')]))
+        await ctx.send(' '.join([str(ord(letter)) for letter in text]))
 
     @commands.command()
     async def unascii(self, ctx, *, text: str):
         """Reforms string from char code separated with ','"""
 
         try:
-            codes = [chr(int(i)) for i in text.strip('``').strip('`').split(',')]
+            codes = [chr(int(i)) for i in text.split(' ')]
             await ctx.send(''.join(codes))
         except ValueError as e:
-            await ctx.send(f"Invalid sequence. Example usage : `{self.bot.config['PREFIX']}unascii 104,101,121`")
+            await ctx.send(f"Invalid sequence. Example usage : `{self.bot.config['PREFIX']}unascii 104 101 121`")
 
     @commands.command()
     async def byteconvert(self, ctx, value: int, unit='Mio'):
