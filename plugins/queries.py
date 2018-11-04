@@ -5,7 +5,6 @@ import sys
 import urllib.parse
 from datetime import datetime
 from functools import reduce
-from string import ascii_uppercase
 
 import aiohttp
 import discord
@@ -17,7 +16,7 @@ from discord.ext import commands
 from discord.ext.commands.cooldowns import BucketType
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-import _ref
+import _ref, _doc
 from _tio import Tio, TioRequest
 
 class Search:
@@ -58,100 +57,57 @@ class Search:
         else:
             await ctx.send("No results")
 
+    # TODO: lua, java, javascript, asm
+    documented = {
+        'python': _doc.pythondoc,
+        'cpp': _doc.cppdoc,
+        'c': _doc.cdoc
+    }
+
+    @commands.command(aliases=['doc'])
+    async def documentation(self, ctx, lang, *, text: str):
+        """Returns element reference from given language"""
+
+        lang = lang.strip('`')
+
+        if not lang.lower() in self.documented:
+            return await ctx.send(f"{lang} not available. See {self.bot.config['PREFIX']}doclist for available ones.")
+
+        await self.documented[lang.lower()](ctx, text.strip('`'))
+
     @commands.command()
-    async def pythondoc(self, ctx, *, text: str):
-        """Filters python.org results based on your query"""
+    async def doclist(self, ctx):
+        """Give available technos for reference command"""
 
-        url = "https://docs.python.org/3/genindex-all.html"
-        alphabet = '_' + ascii_uppercase
+        emb = discord.Embed(title="Available technologies for documentation command",
+            description=f"`{'`, `'.join(self.documented)}`")
 
-        async with aiohttp.ClientSession() as client_session:
-            async with client_session.get(url) as response:
-                if response.status != 200:
-                    return await ctx.send('An error occurred (status code: {response.status}). Retry later.')
+        await ctx.send(embed=emb)
 
-                soup = BeautifulSoup(str(await response.text()), 'lxml')
+    def get_content(_, tag):
+        """Returns content between two h2 tags"""
 
-                def soup_match(tag):
-                    return all(string in tag.text for string in text.strip().split()) and tag.name == 'li'
+        bssiblings = tag.next_siblings
+        siblings = []
+        for elem in bssiblings:
+            # get only tag elements, before the next h2
+            # Putting away the comments, we know there's
+            # at least one after it.
+            if type(elem) == NavigableString:
+                continue
+            # It's a tag
+            if elem.name == 'h2':
+                break
+            siblings.append(elem.text)
+        content = '\n'.join(siblings)
+        if len(content) >= 1024:
+            content = content[:1021] + '...'
 
-                elements = soup.find_all(soup_match, limit=10)
-                links = [tag.select_one("li > a") for tag in elements]
-                links = [link for link in links if link is not None]
+        return content
 
-                if not links:
-                    return await ctx.send("No results")
-
-                content = [f"[{a.string}](https://docs.python.org/3/{a.get('href')})" for a in links]
-
-                emb = discord.Embed(title="Python 3 docs")
-                emb.add_field(name=f'Results for `{text}` :', value='\n'.join(content), inline=False)
-
-                await ctx.send(embed=emb)
-
-    @commands.command(aliases=['cdoc', 'c++doc'])
-    async def cppdoc(self, ctx, *, text: str):
-        """Search something on cppreference"""
-
-        base_url = 'https://cppreference.com/w/cpp/index.php?title=Special:Search&search=' + text
-        url = urllib.parse.quote_plus(base_url, safe=';/?:@&=$,><-[]')
-
-        async with aiohttp.ClientSession() as client_session:
-            async with client_session.get(url) as response:
-                if response.status != 200:
-                    return await ctx.send(f'An error occurred (status code: {response.status}). Retry later.')
-
-                soup = BeautifulSoup(await response.text(), 'lxml')
-
-                uls = soup.find_all('ul', class_='mw-search-results')
-
-                if not len(uls):
-                    return await ctx.send('No results')
-
-                if ctx.invoked_with == 'cdoc':
-                    wanted = 'w/c/'
-                    language = 'C'
-                else:
-                    wanted = 'w/cpp/'
-                    language = 'C++'
-
-                for elem in uls:
-                    if wanted in elem.select_one("a").get('href'):
-                        links = elem.find_all('a', limit=10)
-                        break
-
-                content = [f"[{a.string}](https://en.cppreference.com/{a.get('href')})" for a in links]
-                emb = discord.Embed(title=f"{language} docs")
-                emb.add_field(name=f'Results for `{text}` :', value='\n'.join(content), inline=False)
-
-                await ctx.send(embed=emb)
-
-    @commands.command(aliases=['man'])
-    async def manpage(self, ctx, *, text: str):
+    @commands.command()
+    async def man(self, ctx, *, text: str):
         """Returns the manual's page for a linux command"""
-
-        def get_content(tag):
-            """Returns content between two h2 tags"""
-
-            bssiblings = tag.next_siblings
-            siblings = []
-            for elem in bssiblings:
-                # get only tag elements, before the next h2
-                # Putting away the comments, we know there's
-                # at least one after it.
-                if type(elem) == NavigableString:
-                    continue
-                # It's a tag
-                if elem.name == 'h2':
-                    break
-                siblings.append(elem.text)
-            content = '\n'.join(siblings)
-            if len(content) >= 1024:
-                content = content[:1021] + '...'
-
-            return content
-
-
 
         base_url = f'https://man.cx/{text}'
         url = urllib.parse.quote_plus(base_url, safe=';/?:@&=$,><-[]')
@@ -176,7 +132,7 @@ class Search:
                 if contents[-1].string == 'COMMENTS':
                     contents.remove(-1)
 
-                title = get_content(nameTag)
+                title = self.get_content(nameTag)
 
                 emb = discord.Embed(title=title, url=f'https://man.cx/{text}')
                 emb.set_author(name='Debian Linux man pages',
@@ -185,11 +141,11 @@ class Search:
 
                 for tag in contents:
                     h2 = tuple(soup.find(attrs={'name': tuple(tag.children)[0].get('href')[1:]}).parents)[0]
-                    emb.add_field(name=tag.string, value=get_content(h2))
+                    emb.add_field(name=tag.string, value=self.get_content(h2))
 
                 await ctx.send(embed=emb)
 
-    @commands.command()
+    @commands.command(aliases=['exec'])
     async def run(self, ctx, lang, *, text: str):
         """Execute on a distant server and print results of a code in a given language"""
         # Powered by tio.run
@@ -253,11 +209,11 @@ class Search:
         # await ctx.send(embed=emb)
 
         emb = discord.Embed(title="Available languages for run command")
-        emb.add_field(name="Doesn't fit here", value="[See yourself](https://hastebin.com/raw/itasidumeq)")
+        emb.add_field(name="Doesn't fit here", value="[See yourself](https://hastebin.com/raw/axomisozaf)")
 
         await ctx.send(embed=emb)
 
-    langs = {
+    referred = {
         "html5": _ref.html_ref,
         "http-headers": _ref.http_headers,
         "http-methods": _ref.http_methods,
@@ -271,17 +227,17 @@ class Search:
 
         lang = lang.strip('`')
 
-        if not lang.lower() in self.langs:
+        if not lang.lower() in self.referred:
             return await ctx.send(f"{lang} not available. See {self.bot.config['PREFIX']}reflist for available ones.")
 
-        await self.langs[lang.lower()](ctx, text.strip('`'))
+        await self.referred[lang.lower()](ctx, text.strip('`'))
 
     @commands.command()
     async def reflist(self, ctx):
         """Give available technos for reference command"""
 
         emb = discord.Embed(title="Available technologies for reference command",
-            description=f"`{'`, `'.join(self.langs)}`")
+            description=f"`{'`, `'.join(self.referred)}`")
 
         await ctx.send(embed=emb)
 

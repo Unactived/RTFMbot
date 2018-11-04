@@ -1,22 +1,16 @@
-import html
 import urllib.parse
-import re
 from functools import partial
+# import sys
 
 import aiohttp
 import discord
 from bs4 import BeautifulSoup
 from bs4.element import NavigableString
 
-def html_to_md(string):
-    string = re.sub('<code>|</code>', '`', string)
-    string = re.sub('<strong>|</strong>', '**', string)
-    string = re.sub('<em>|</em>', '*', string)
-    string = re.sub('<span class="seoSummary">|</span>', '', string)
+# sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+import _used
 
-    return html.unescape(string)
-
-async def process_mozilla_doc(ctx, url):
+async def _process_mozilla_doc(ctx, url):
 
         async with aiohttp.ClientSession() as client_session:
             async with client_session.get(url) as response:
@@ -42,7 +36,7 @@ async def process_mozilla_doc(ctx, url):
                     elif type(tag) == NavigableString:
                         result.append(str(tag.string))
                     else:
-                        result.append(html_to_md(str(tag)))
+                        result.append(_used.html_to_md(str(tag)))
 
                 return ''.join(result)
 
@@ -53,7 +47,7 @@ async def html_ref(ctx, text):
     base_url = f"https://developer.mozilla.org/en-US/docs/Web/HTML/Element/{text}"
     url = urllib.parse.quote_plus(base_url, safe=';/?:@&=$,><-[]')
 
-    output = await process_mozilla_doc(ctx, url)
+    output = await _process_mozilla_doc(ctx, url)
     if type(output) != str:
         # Error message already sent
         return
@@ -64,12 +58,12 @@ async def html_ref(ctx, text):
 
     await ctx.send(embed=emb)
 
-async def http_ref(part, ctx, text):
+async def _http_ref(part, ctx, text):
 
     base_url = f"https://developer.mozilla.org/en-US/docs/Web/HTTP/{part}/{text}"
     url = urllib.parse.quote_plus(base_url, safe=';/?:@&=$,><-[]')
 
-    output = await process_mozilla_doc(ctx, url)
+    output = await _process_mozilla_doc(ctx, url)
     if type(output) != str:
         # Error message already sent
         return
@@ -79,7 +73,7 @@ async def http_ref(part, ctx, text):
 
     await ctx.send(embed=emb)
 
-http_headers = partial(http_ref, 'Headers')
-http_methods = partial(http_ref, 'Methods')
-http_status = partial(http_ref, 'Status')
-csp_directives = partial(http_ref, 'Headers/Content-Security-Policy')
+http_headers = partial(_http_ref, 'Headers')
+http_methods = partial(_http_ref, 'Methods')
+http_status = partial(_http_ref, 'Status')
+csp_directives = partial(_http_ref, 'Headers/Content-Security-Policy')
