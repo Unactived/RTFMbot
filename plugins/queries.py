@@ -135,9 +135,8 @@ class Search:
                 title = self.get_content(nameTag)
 
                 emb = discord.Embed(title=title, url=f'https://man.cx/{text}')
-                emb.set_author(name='Debian Linux man pages',
-                    icon_url='https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/Openlogo-debianV2.'
-                    'svg/640px-Openlogo-debianV2.svg.png?1538755715969')
+                emb.set_author(name='Debian Linux man pages')
+                emb.set_thumbnail(url='https://www.debian.org/logos/openlogo-nd-100.png')
 
                 for tag in contents:
                     h2 = tuple(soup.find(attrs={'name': tuple(tag.children)[0].get('href')[1:]}).parents)[0]

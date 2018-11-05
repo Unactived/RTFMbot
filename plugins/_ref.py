@@ -70,6 +70,7 @@ async def _http_ref(part, ctx, text):
 
     emb = discord.Embed(title=text, description=output, url=url)
     emb.set_author(name='HTTP protocol')
+    emb.set_thumbnail(url='https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/HTTP_logo.svg/1280px-HTTP_logo.svg.png')
 
     await ctx.send(embed=emb)
 
