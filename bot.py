@@ -48,7 +48,7 @@ class RTFM(commands.Bot):
         print('-------------------------------------------\n')
         await self.change_presence(status=self.config['STATUS_TYPE'],
                                    activity=discord.Game(name=self.config['STATUS']))
-        update_dbl_count(self)
+        await update_dbl_count(self)
 
 
     async def on_resumed(self):
@@ -60,10 +60,10 @@ class RTFM(commands.Bot):
         await self.process_commands(message)
 
     async def on_guild_join(self, guild):
-        update_dbl_count(self)
+        await update_dbl_count(self)
 
     async def on_guild_remove(self, guild):
-        update_dbl_count(self)
+        await update_dbl_count(self)
 
     async def close(self):
         await super().close()
