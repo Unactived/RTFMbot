@@ -1,9 +1,8 @@
 import sys
 
+import aiohttp
 import discord
 from discord.ext import commands
-
-# import utils
 
 extensions = (
     'plugins.owner',
@@ -21,19 +20,27 @@ def _prefix_callable(bot, message):
 description = "A discord bot to help you in your daily programming discord life"
 
 
+async def update_dbl_count(bot):
+    """POST the new amount of servers the bot is in"""
+
+    url = f"https://discordbots.org/api/bots/{bot.user.id}/stats"
+    headers = {"Authorization" : bot.config['DBL_TOKEN']}
+    payload = {"server_count"  : len(bot.servers)}
+    async with aiohttp.ClientSession() as aioclient:
+        await aioclient.post(url, data=payload, headers=headers)
+
+
 class RTFM(commands.Bot):
     def __init__(self, config):
         super().__init__(command_prefix=_prefix_callable,
                          description=description, pm_help=None)
 
-        # self.db_con = sqlite3.connect("database.db")
         self.config = config
 
         for extension in extensions:
             try:
                 self.load_extension(extension)
             except Exception as e:
-                # print in error stream
                 print(f"Couldn't load the following extension : {extension} ; :{e}", file=sys.stderr)
 
     async def on_ready(self):
@@ -41,6 +48,8 @@ class RTFM(commands.Bot):
         print('-------------------------------------------\n')
         await self.change_presence(status=self.config['STATUS_TYPE'],
                                    activity=discord.Game(name=self.config['STATUS']))
+        update_dbl_count(self)
+
 
     async def on_resumed(self):
         print(f'\n[*] {self.user} resumed...')
@@ -50,34 +59,11 @@ class RTFM(commands.Bot):
             return
         await self.process_commands(message)
 
-    # async def on_guild_join(self, guild):
-    #     try:
-    #         with self.db_con:
-    #             self.db_con.execute("""INSERT OR IGNORE INTO guilds VALUES
-    #                 (?, ?, 'fr!', '', '', ?, 'us')
-    #             """, (guild.id, guild.name, str(guild.created_at)))
-    #     except sqlite3.IntegrityError:
-    #         print(f"ERROR adding {guild.name} ({guild.id}) to database")
+    async def on_guild_join(self, guild):
+        update_dbl_count(self)
 
-    # async def on_guild_update(self, before, after):
-    #     try:
-    #         with self.db_con:
-    #             # We assume guild ID won't change
-    #             self.db_con.execute("""UPDATE guilds
-    #                 SET name=? WHERE id=?
-    #             """, (after.name, before.id))
-    #             # Add relevant guild updates here
-    #     except sqlite3.IntegrityError:
-    #         print(f"ERROR updating {before.name} ({before.id}) in database")
-
-    # async def on_guild_remove(self, guild):
-    #     try:
-    #         with self.db_con:
-    #             self.db_con.execute("""DELETE FROM guilds
-    #                 WHERE id=?
-    #             """, (guild.id))
-    #     except sqlite3.IntegrityError:
-    #         print(f"ERROR removing {guild.name} ({guild.id}) from database")
+    async def on_guild_remove(self, guild):
+        update_dbl_count(self)
 
     async def close(self):
         await super().close()
