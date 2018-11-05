@@ -60,4 +60,5 @@ so you can test or show it.
 You may
 
   - Leave a star on this github repository, it helps it get some visibility
+  - [Vote](https://discordbots.org/bot/495914599531675648/vote) for it on Discord Bots List
   - Share comments about the bot as well as its invite to other interested people
