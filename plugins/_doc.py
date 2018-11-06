@@ -1,6 +1,5 @@
 # import sys
 # sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-import os
 import urllib.parse
 from functools import partial
 from string import ascii_uppercase
@@ -35,11 +34,8 @@ async def pythondoc(ctx, text: str):
 
             content = [f"[{a.string}](https://docs.python.org/3/{a.get('href')})" for a in links]
 
-            path = os.path.join("./RTFMbot-master/assets", "python.png")
-            file = discord.File(path, "python_logo.png")
-
             emb = discord.Embed(title="Python 3 docs")
-            emb.set_thumbnail(url='attachment://python_logo.png')
+            emb.set_thumbnail(url='https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Python-logo-notext.svg/240px-Python-logo-notext.svg.png')
             emb.add_field(name=f'Results for `{text}` :', value='\n'.join(content), inline=False)
 
             await ctx.send(embed=emb)
