@@ -25,7 +25,7 @@ async def update_dbl_count(bot):
 
     url = f"https://discordbots.org/api/bots/{bot.user.id}/stats"
     headers = {"Authorization" : bot.config['DBL_TOKEN']}
-    payload = {"server_count"  : len(bot.servers)}
+    payload = {"server_count"  : len(bot.guilds)}
     async with aiohttp.ClientSession() as aioclient:
         await aioclient.post(url, data=payload, headers=headers)
 
