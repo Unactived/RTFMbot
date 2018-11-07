@@ -9,7 +9,11 @@ class Tools:
     async def ascii(self, ctx, *, text: str):
         """Returns number representation of characters in text"""
 
-        await ctx.send(' '.join([str(ord(letter)) for letter in text]))
+        emb = discord.Embed(title="Unicode convert",
+            description=' '.join([str(ord(letter)) for letter in text]))
+        emb.set_footer(text=f'Invoked by {str(ctx.message.author)}')
+
+        await ctx.send(embed=emb)
 
     @commands.command()
     async def unascii(self, ctx, *, text: str):
@@ -17,7 +21,10 @@ class Tools:
 
         try:
             codes = [chr(int(i)) for i in text.split(' ')]
-            await ctx.send(''.join(codes))
+            emb = discord.Embed(title="Unicode convert",
+                description=''.join(codes))
+            emb.set_footer(text=f'Invoked by {str(ctx.message.author)}')
+            await ctx.send(embed=emb)
         except ValueError as e:
             await ctx.send(f"Invalid sequence. Example usage : `{self.bot.config['PREFIX']}unascii 104 101 121`")
 
