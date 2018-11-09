@@ -1,7 +1,11 @@
 import os
+import platform
+from pkg_resources import get_distribution
+from time import perf_counter
 
 import discord
 from discord.ext import commands
+from dateutil.relativedelta import relativedelta
 
 class Misc:
     def __init__(self, bot):
@@ -28,7 +32,29 @@ class Misc:
         emb.set_footer(text= f"Coded in Python 3 by {info.owner.name}", 
             icon_url=info.owner.avatar_url)
 
-        emb.add_field(name='Links', value=links)
+        implementation = platform.python_implementation()
+        pyVersion = platform.python_version()
+        libVersion = get_distribution("discord.py").version
+        hosting = platform.platform()
+
+        delta = relativedelta(seconds=perf_counter())
+        uptime = ''
+
+        if delta.days: uptime += f'{int(delta.days)} days, '
+        if delta.hours: uptime += f'{int(delta.hours)} hours, '
+        if delta.minutes: uptime += f'{int(delta.minutes)} minutes, '
+        if delta.seconds: uptime += f'{int(delta.seconds)} seconds, '
+
+        emb.add_field(name='Server count', value=str(len(self.bot.guilds)))
+        emb.add_field(name='Member count', value=str(sum([guild.member_count for guild in self.bot.guilds])))
+
+        emb.add_field(name='Python', value=f'Python {pyVersion} with {implementation}')
+        emb.add_field(name='Discord.py version', value=libVersion)
+
+        emb.add_field(name='Hosting', value=hosting)
+        emb.add_field(name='Uptime', value=uptime[:-2])
+
+        emb.add_field(name='Links', value=links, inline=False)
 
         await ctx.send(file=file, embed=emb)
 
