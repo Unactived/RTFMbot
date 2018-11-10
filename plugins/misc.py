@@ -1,7 +1,8 @@
 import os
 import platform
+import time
 from pkg_resources import get_distribution
-from time import perf_counter
+from psutil import Process
 
 import discord
 from discord.ext import commands
@@ -37,7 +38,7 @@ class Misc:
         libVersion = get_distribution("discord.py").version
         hosting = platform.platform()
 
-        delta = relativedelta(seconds=perf_counter())
+        delta = relativedelta(seconds=int(time.time() - Process(os.getpid()).create_time()))
         uptime = ''
 
         if delta.days: uptime += f'{int(delta.days)} days, '
