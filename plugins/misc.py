@@ -18,6 +18,7 @@ class Misc:
 
         # Sadly I couldn't break this line
         links = f'[Invite me to your server](https://discordapp.com/api/oauth2/authorize?client_id={self.bot.user.id}&permissions=108514369&scope=bot "You need manage server permission")\n\
+        [Join support server](https://discord.gg/gPCwvwB "Come say hello")\n\
         [Source code](https://github.com/FrenchMasterSword/RTFMbot "Leave a ⭐")\n\
         [Report a bug](https://github.com/FrenchMasterSword/RTFMbot/issues "Open an issue")\n\
         [Support by voting for me](https://discordbots.org/bot/495914599531675648/vote "Thanks ^^")'
