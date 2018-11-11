@@ -33,7 +33,7 @@ async def update_dbl_count(bot):
 class RTFM(commands.Bot):
     def __init__(self, config):
         super().__init__(command_prefix=_prefix_callable,
-                         description=description, pm_help=None)
+                         description=description)
 
         self.config = config
 
@@ -55,7 +55,7 @@ class RTFM(commands.Bot):
         print(f'\n[*] {self.user} resumed...')
 
     async def on_message(self, message):
-        if message.author.bot:
+        if type(message.channel) == discord.channel.DMChannel or message.author.bot:
             return
         await self.process_commands(message)
 
