@@ -43,7 +43,7 @@ async def log_guilds(bot, guild, joined: bool):
     emb = discord.Embed(description=f"{guild.name} {content}")
     emb.set_thumbnail(url=guild.icon_url)
 
-    await ctx.send(embed=emb)
+    await logsChannel.send(embed=emb)
 
 
 class RTFM(commands.Bot):
