@@ -29,6 +29,22 @@ async def update_dbl_count(bot):
     async with aiohttp.ClientSession() as aioclient:
         await aioclient.post(url, data=payload, headers=headers)
 
+async def log_guilds(bot, guild, joined: bool):
+    """
+    Logs guilds adding/kicking the bot in the support server
+    
+    """
+    logsChannel = bot.get_channel(bot.config['SUPPORT_LOG_CHANNEL_ID'])
+    if joined:
+        content = 'added RTFM to their community ! :smiley:'
+    else:
+        content = 'removed RTFM from their community :pensive:'
+
+    emb = discord.Embed(description=f"{guild.name} {content}")
+    emb.set_thumbnail(url=guild.icon_url)
+
+    await ctx.send(embed=emb)
+
 
 class RTFM(commands.Bot):
     def __init__(self, config):
@@ -61,9 +77,11 @@ class RTFM(commands.Bot):
 
     async def on_guild_join(self, guild):
         await update_dbl_count(self)
+        await log_guilds(self, guild, True)
 
     async def on_guild_remove(self, guild):
         await update_dbl_count(self)
+        await log_guilds(self, guild, False)
 
     async def close(self):
         await super().close()
