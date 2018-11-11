@@ -125,7 +125,7 @@ class Search:
                     # No NAME, no page
                     return await ctx.send(f'No manual entry for `{text}`. (Debian)')
 
-                # Get the three (or less) first parts from the nav aside
+                # Get the two (or less) first parts from the nav aside
                 # The first one is NAME, we already have it in nameTag
                 contents = soup.find_all('nav', limit=2)[1].find_all('li', limit=3)[1:]
 
@@ -217,7 +217,9 @@ class Search:
         "http-headers": _ref.http_headers,
         "http-methods": _ref.http_methods,
         "http-status-codes": _ref.http_status,
-        "csp-directives": _ref.csp_directives
+        "csp-directives": _ref.csp_directives,
+        "git": _ref.git_ref,
+        "git-guides": _ref.git_tutorial_ref
     }
 
     @commands.command(aliases=['ref'])
