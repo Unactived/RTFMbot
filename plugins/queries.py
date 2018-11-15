@@ -165,6 +165,7 @@ class Search:
                 f"programming languages, do `{self.bot.config['PREFIX']}runlist`")
 
         output = res.result.decode('utf-8')
+        # remove token
         cleaned = re.sub(re.escape(output[:16]), '', output)
         if len(cleaned) > 1991:
             # Mustn't exceed 2000 characters, counting ` and ph\n characters

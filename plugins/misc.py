@@ -21,7 +21,7 @@ class Misc:
         [Join support server](https://discord.gg/gPCwvwB "Come say hello")\n\
         [Source code](https://github.com/FrenchMasterSword/RTFMbot "Leave a ⭐")\n\
         [Report a bug](https://github.com/FrenchMasterSword/RTFMbot/issues "Open an issue")\n\
-        [Support by voting for me](https://discordbots.org/bot/495914599531675648/vote "Thanks ^^")'
+        Support by upvoting me [here](https://discordbots.org/bot/495914599531675648/vote "Thanks ^^"), [here](https://botsfordiscord.com/bots/495914599531675648/vote) and [here](https://discordbotlist.com/bots/495914599531675648/upvote)'
 
         info = await self.bot.application_info()
         path = os.path.join("./RTFMbot-master", "icon.png")
