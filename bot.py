@@ -2,6 +2,7 @@ import sys
 
 import aiohttp
 import discord
+import json
 from discord.ext import commands
 
 extensions = (
@@ -21,13 +22,30 @@ description = "A discord bot to help you in your daily programming discord life"
 
 
 async def update_dbl_count(bot):
-    """POST the new amount of servers the bot is in"""
+    """POST updated stats about the bot"""
+
+    guildCount = len(bot.guilds)
+    usersCount = sum([guild.member_count for guild in bot.guilds])
+    payload = {"server_count"  : guildCount}
 
     url = f"https://discordbots.org/api/bots/{bot.user.id}/stats"
-    headers = {"Authorization" : bot.config['DBL_TOKEN']}
-    payload = {"server_count"  : len(bot.guilds)}
+    headers = {"Authorization" : bot.config['DB_TOKEN']}
+
     async with aiohttp.ClientSession() as aioclient:
         await aioclient.post(url, data=payload, headers=headers)
+
+    url = f"https://botsfordiscord.com/api/bot/{bot.user.id}"
+    headers = {"Authorization" : bot.config['BFD_TOKEN']}
+
+    async with aiohttp.ClientSession() as aioclient:
+        await aioclient.post(url, data=payload, headers=headers)
+
+    url = f'https://discordbotlist.com/api/bots/{bot.user.id}/stats'
+    headers = {"Authorization" : f"Bot {bot.config['DBL_TOKEN']}", "Content-Type": "application/json"}
+    payload = {"guilds"  : guildCount, "users": userCount}
+
+    async with aiohttp.ClientSession() as aioclient:
+    await aioclient.post(url, data=json.dumps(payload), headers=headers)
 
 async def log_guilds(bot, guild, joined: bool):
     """
