@@ -45,7 +45,7 @@ async def update_dbl_count(bot):
     payload = {"guilds"  : guildCount, "users": userCount}
 
     async with aiohttp.ClientSession() as aioclient:
-    await aioclient.post(url, data=json.dumps(payload), headers=headers)
+        await aioclient.post(url, data=json.dumps(payload), headers=headers)
 
 async def log_guilds(bot, guild, joined: bool):
     """
