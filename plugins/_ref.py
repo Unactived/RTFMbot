@@ -1,3 +1,4 @@
+import re
 import urllib.parse
 from functools import partial
 # import sys
@@ -28,17 +29,7 @@ async def _process_mozilla_doc(ctx, url):
     # First tag not empty
     contents = body.find(id='wikiArticle').find(lambda x: x.name == 'p' and x.text).contents
 
-    result = []
-
-    for tag in contents:
-        if tag.name == 'a':
-            result.append(f'''[{tag.text}](https://developer.mozilla.org{tag.get('href')} "{tag.get('title')}")''')
-        elif type(tag) == NavigableString:
-            result.append(str(tag.string))
-        else:
-            result.append(_used.html_to_md(str(tag)))
-
-    return ''.join(result)
+    return _used.tags_to_text(contents, url)
 
 async def html_ref(ctx, text):
 
@@ -108,8 +99,39 @@ async def _git_main_ref(part, ctx, text):
             emb.set_thumbnail(url='https://git-scm.com/images/logo@2x.png')
 
             for tag in sectors[1:]:
-                content = _used.html_to_md('\n'.join([p.text for p in tag.find_all(lambda x: x.name in ['p', 'pre'])]))
+                content = '\n'.join([_used.tags_to_text(p.contents, url) for p in tag.find_all(lambda x: x.name in ['p', 'pre'])])
                 emb.add_field(name=tag.find('h2').text, value=content[:1024])
+
+            await ctx.send(embed=emb)
+
+async def sql_ref(ctx, text):
+    text = text.strip('`').lower()
+    if text in ('check', 'unique', 'not null'): text += ' constraint'
+    text = re.sub(' ', '-', text)
+
+    base_url = f"http://www.sqltutorial.org/sql-{text}/"
+    url = urllib.parse.quote_plus(base_url, safe=';/?:@&=$,><-[]')
+
+    async with aiohttp.ClientSession() as client_session:
+        async with client_session.get(url) as response:
+            if response.status != 200:
+                return await ctx.send(f'An error occurred (status code: {response.status}). Retry later.')
+
+            body = BeautifulSoup(await response.text(), 'lxml').find('body')
+            intro = body.find(lambda x: x.name == 'h2' and 'Introduction to ' in x.string)
+            title = body.find('h1').string
+
+            ps = []
+            for tag in tuple(intro.next_siblings):
+                if tag.name == 'h2' and tag.text.startswith('SQL '): break
+                if tag.name == 'p':
+                    ps.append(tag)
+
+            description = '\n'.join([_used.tags_to_text(p.contents, url) for p in ps])[:2048]
+
+            emb = discord.Embed(title=title, url=url, description=description)
+            emb.set_author(name='SQL Reference')
+            emb.set_thumbnail(url='https://users.soe.ucsc.edu/~kunqian/logos/sql-logo.png')
 
             await ctx.send(embed=emb)
 

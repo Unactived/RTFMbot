@@ -220,7 +220,8 @@ class Search:
         "http-status-codes": _ref.http_status,
         "csp-directives": _ref.csp_directives,
         "git": _ref.git_ref,
-        "git-guides": _ref.git_tutorial_ref
+        "git-guides": _ref.git_tutorial_ref,
+        "sql": _ref.sql_ref
     }
 
     @commands.command(aliases=['ref'])
