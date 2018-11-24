@@ -148,9 +148,16 @@ class Search:
     async def run(self, ctx, lang, *, text: str):
         """Execute on a distant server and print results of a code in a given language"""
         # Powered by tio.run
+
+        conso = False
         
         language = lang.strip('`').lower()
-        code = text.strip('`').strip('``')
+
+        if text.endswith('--conso'):
+            text = text[:-7].strip(' ')
+            print(f'"{text}"')
+            conso = True
+        code = text.strip('`')
 
         firstLine = code.splitlines()[0]
         if re.fullmatch(r'( |[0-9A-z]*)\b', firstLine):
@@ -167,6 +174,12 @@ class Search:
         output = res.result.decode('utf-8')
         # remove token
         cleaned = re.sub(re.escape(output[:16]), '', output)
+
+        if not conso:
+            start = cleaned.rindex("Real time: ")
+            end = cleaned.rindex("%\nExit code: ")
+            cleaned = cleaned[:start] + cleaned[end+2:]
+
         if len(cleaned) > 1991:
             # Mustn't exceed 2000 characters, counting ` and ph\n characters
             cleaned = cleaned[:1988] + '...'

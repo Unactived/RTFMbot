@@ -33,7 +33,7 @@ async def _process_mozilla_doc(ctx, url):
 
 async def html_ref(ctx, text):
 
-    text = text.strip('<').strip('>')
+    text = text.strip('<>')
 
     base_url = f"https://developer.mozilla.org/en-US/docs/Web/HTML/Element/{text}"
     url = urllib.parse.quote_plus(base_url, safe=';/?:@&=$,><-[]')
