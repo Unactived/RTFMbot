@@ -158,7 +158,7 @@ class Search:
 
         site = Tio()
         req = TioRequest(language, code)
-        res = site.send(req)
+        res = await site.send(req)
         
         if res.result == f"The language '{language}' could not be found on the server.\n":
             return await ctx.send(f"`{language}` isn't available. For a list of available"

@@ -6,8 +6,10 @@ import json
 import zlib
 from functools import partial
 from typing import NamedTuple, AnyStr, Union, List, Optional, Any
-from urllib.error import HTTPError, URLError
-from urllib.request import urlopen
+# from urllib.error import HTTPError, URLError
+# from urllib.request import urlopen
+
+import aiohttp
 
 bytes_ = partial(bytes, encoding='utf-8')
 
@@ -163,38 +165,26 @@ class Tio:
                 break
             yield data
 
-    def query_languages(self):
-        # Used to get a set containing all supported languages on TIO.run.
-        try:
-            response = urlopen(self.json)
-            rawdata = json.loads(response.read().decode('utf-8'))
-            return set(rawdata.keys())
-        except (HTTPError, URLError):
-            return set()
-        except Exception:
-            return set()
-
-    def send(self, fmt):
+    async def send(self, fmt):
         # Command alias to use send_bytes; this is more or less a TioJ cutover.
-        return self.send_bytes(fmt.as_deflated_bytes())
+        return await self.send_bytes(fmt.as_deflated_bytes())
 
-    def send_bytes(self, message):
-        req = urlopen(self.backend, data=message)
-        reqcode = req.getcode()
-        if req.code == 200:
-            content_type = req.info().get_content_type()
+    async def send_bytes(self, message):
+        async with aiohttp.ClientSession() as client_session:
+            async with client_session.post(self.backend, data=message) as res:
+                if res.status != 200:
+                    # If the HTTP request failed, we need to give a TioResponse object with no data.
+                    return TioResponse(res.status, None, None)
 
-            # Specially handle GZipped responses from the server, and unzip them.
-            if content_type == 'application/octet-stream':
-                buf = io.BytesIO(req.read())
-                gzip_f = gzip.GzipFile(fileobj=buf)
-                fulldata = gzip_f.read()
-            else:
-                # However, if it's not compressed, just read it directly.
-                fulldata = req.read()
+                # Specially handle GZipped responses from the server, and unzip them.
+                # if res.content_type == 'application/octet-stream':
+                #     buf = io.BytesIO(await res.read())
+                #     print(buf)
+                #     gzip_f = gzip.GzipFile(fileobj=buf)
+                #     fulldata = gzip_f.read()
+                # else:
+                    # However, if it's not compressed, just read it directly.
+                fulldata = await res.read()
 
-            # Return a TioResponse object, containing the returned data from TIO.
-            return TioResponse(reqcode, fulldata, None)
-        else:
-            # If the HTTP request failed, we need to give a TioResponse object with no data.
-            return TioResponse(reqcode, None, None)
+                # Return a TioResponse object, containing the returned data from TIO.
+                return TioResponse(res.status, fulldata, None)
