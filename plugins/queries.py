@@ -155,7 +155,6 @@ class Search:
 
         if text.endswith('--conso'):
             text = text[:-7].strip(' ')
-            print(f'"{text}"')
             conso = True
         code = text.strip('`')
 
