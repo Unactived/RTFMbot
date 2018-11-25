@@ -156,7 +156,7 @@ class Search:
         if not lang in self.bot.languages:
             matches = '\n'.join([lang for lang in self.bot.languages if language in lang][:5])
             if lang == 'javascript':
-                matches.append("the worst language ever")
+                matches += "\nthe worst language ever"
             message = f"`{language}` not available."
             if matches:
                 message = message + f" Did you mean:\n{matches}"
