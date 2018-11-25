@@ -91,7 +91,12 @@ class RTFM(commands.Bot):
     async def on_message(self, message):
         if type(message.channel) == discord.channel.DMChannel or message.author.bot:
             return
+
         await self.process_commands(message)
+
+    async def on_command_error(self, ctx, error):
+        if isinstance(error, commands.DisabledCommand):
+            return await ctx.send('This command has been disabled and cannot be used')
 
     async def on_guild_join(self, guild):
         await update_dbl_count(self)
