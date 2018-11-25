@@ -150,8 +150,16 @@ class Search:
         # Powered by tio.run
 
         conso = False
-        
+
         language = lang.strip('`').lower()
+
+        if not lang in self.bot.languages:
+            matches = '\n'.join([lang for lang in self.bot.languages if language in lang][:5])
+            message = f"`{language}` not available."
+            if matches:
+                message = message + f" Did you mean:\n{matches}"
+
+            return await ctx.send(message)
 
         if text.endswith('--conso'):
             text = text[:-7].strip(' ')
@@ -166,10 +174,6 @@ class Search:
         req = TioRequest(language, code)
         res = await site.send(req)
         
-        if res.result == f"The language '{language}' could not be found on the server.\n":
-            return await ctx.send(f"`{language}` isn't available. For a list of available"
-                f"programming languages, do `{self.bot.config['PREFIX']}runlist`")
-
         output = res.result.decode('utf-8')
         # remove token
         cleaned = re.sub(re.escape(output[:16]), '', output)
