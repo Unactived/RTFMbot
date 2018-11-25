@@ -97,7 +97,10 @@ class Owner:
     @commands.command(hidden=True)
     async def say(self, ctx, *, text: str):
         """Makes the bot say something in the current channel"""
-        await ctx.message.delete()
+        try:
+            await ctx.message.delete()
+        except commands.errors.CommandInvokeError:
+            pass
         await ctx.send(text)
 
     def _clean_code(self, code):
