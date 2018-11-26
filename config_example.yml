@@ -1,4 +1,31 @@
+PREFIX: 'do '
+
 # Discord access token
 # https://discordapp.com/developers/applications/
-BOT_TOKEN:
+BOT_TOKEN: ''
 
+# Discord Bots API token
+# https://discordbots.org/api/docs#mybots
+DB_TOKEN: ''
+
+# Bots for Discord API token
+# https://botsfordiscord.com/bots/:ID/token
+BFD_TOKEN: ''
+
+# Discord Bot List API token
+# Generate token on https://discordbotlist.com/bots/:ID
+DBL_TOKEN: ''
+
+# StackApps API token
+# Generate key on https://stackapps.com
+SE_KEY: ''
+
+GREEN: 0x00FF00
+RED: 0xFF0000
+BLURPLE: 0x7289DA
+DISCORD_GREY: 0x36393E
+
+# What should the status read
+STATUS: ''
+# Integer designating the type of activity
+STATUS_TYPE: '3'
