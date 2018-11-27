@@ -17,6 +17,7 @@ agda
 agony
 ahead
 aheui
+alchemist
 algol68g
 alice
 alice-bob
