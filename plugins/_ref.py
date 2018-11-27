@@ -12,6 +12,11 @@ from bs4.element import NavigableString
 import _used
 
 async def _process_mozilla_doc(ctx, url):
+    """
+    From a given url from developers.mozilla.org, processes format,
+    returns tag formatted content
+
+    """
 
     async with aiohttp.ClientSession() as client_session:
         async with client_session.get(url) as response:
@@ -32,8 +37,9 @@ async def _process_mozilla_doc(ctx, url):
     return _used.tags_to_text(contents, url)
 
 async def html_ref(ctx, text):
+    """Displays informations on an HTML tag"""
 
-    text = text.strip('<>')
+    text = text.strip('<>`')
 
     base_url = f"https://developer.mozilla.org/en-US/docs/Web/HTML/Element/{text}"
     url = urllib.parse.quote_plus(base_url, safe=';/?:@&=$,><-[]')
@@ -50,6 +56,7 @@ async def html_ref(ctx, text):
     await ctx.send(embed=emb)
 
 async def _http_ref(part, ctx, text):
+    """Displays informations about HTTP protocol"""
 
     base_url = f"https://developer.mozilla.org/en-US/docs/Web/HTTP/{part}/{text}"
     url = urllib.parse.quote_plus(base_url, safe=';/?:@&=$,><-[]')
@@ -71,6 +78,9 @@ http_status = partial(_http_ref, 'Status')
 csp_directives = partial(_http_ref, 'Headers/Content-Security-Policy')
 
 async def _git_main_ref(part, ctx, text):
+    """Displays a git help page"""
+
+    text = text.strip('`')
 
     if part and text == 'git':
         # just 'git'
@@ -104,7 +114,12 @@ async def _git_main_ref(part, ctx, text):
 
             await ctx.send(embed=emb)
 
+git_ref = partial(_git_main_ref, 'git-')
+git_tutorial_ref = partial(_git_main_ref, '')
+
 async def sql_ref(ctx, text):
+    """Displays reference on an SQL statement"""
+
     text = text.strip('`').lower()
     if text in ('check', 'unique', 'not null'): text += ' constraint'
     text = re.sub(' ', '-', text)
@@ -135,5 +150,29 @@ async def sql_ref(ctx, text):
 
             await ctx.send(embed=emb)
 
-git_ref = partial(_git_main_ref, 'git-')
-git_tutorial_ref = partial(_git_main_ref, '')
+async def haskell_ref(ctx, text):
+    """Displays informations on given Haskell topic"""
+
+    text = text.strip('`')
+
+    snake = '_'.join(text.split(' '))
+
+    base_url = f"https://wiki.haskell.org/{snake}"
+    url = urllib.parse.quote_plus(base_url, safe=';/?:@&=$,><-[]')
+
+    async with aiohttp.ClientSession() as client_session:
+        async with client_session.get(url) as response:
+            if response.status == 404:
+                return await ctx.send(f'No results for `{text}`')
+            if response.status != 200:
+                return await ctx.send(f'An error occurred (status code: {response.status}). Retry later.')
+
+            soup = BeautifulSoup(await response.text(), 'lxml').find('div', id='content')
+
+            title = soup.find('h1', id='firstHeading').string
+            description = '\n'.join([_used.tags_to_text(p.contents, url) for p in  soup.find_all(lambda x: x.name in ['p', 'li'] and tuple(x.parents)[1].name not in ('td', 'li'), limit=6)])[:2048]
+
+            emb = discord.Embed(title=title, description=description, url=url)
+            emb.set_thumbnail(url="https://wiki.haskell.org/wikiupload/thumb/4/4a/HaskellLogoStyPreview-1.png/120px-HaskellLogoStyPreview-1.png")
+
+            await ctx.send(embed=emb)

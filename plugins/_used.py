@@ -6,9 +6,9 @@ import bs4
 
 def html_to_md(string):
     string = re.sub('<code>|</code>', '`', string)
-    string = re.sub('<strong>|</strong>', '**', string)
-    string = re.sub('<em>|</em>', '*', string)
-    string = re.sub('<span class="seoSummary">|</span>', '', string)
+    string = re.sub('<strong>|</strong>|<b>|</b>', '**', string)
+    string = re.sub('<em>|</em>|<i>|</i>', '*', string)
+    string = re.sub('<span class="[a-zA-Z0-9]*">|</span>', '', string)
 
     return html.unescape(string)
 

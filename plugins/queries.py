@@ -59,9 +59,10 @@ class Search:
 
     # TODO: lua, java, javascript, asm
     documented = {
-        'python': _doc.pythondoc,
-        'cpp': _doc.cppdoc,
-        'c': _doc.cdoc
+        'c': _doc.c_doc,
+        'cpp': _doc.cpp_doc,
+        'haskell': _doc.haskell_doc,
+        'python': _doc.python_doc        
     }
 
     @commands.command(aliases=['doc'])
@@ -232,13 +233,14 @@ class Search:
         await ctx.send(embed=emb)
 
     referred = {
+        "csp-directives": _ref.csp_directives,
+        "git": _ref.git_ref,
+        "git-guides": _ref.git_tutorial_ref,
+        "haskell": _ref.haskell_ref,
         "html5": _ref.html_ref,
         "http-headers": _ref.http_headers,
         "http-methods": _ref.http_methods,
         "http-status-codes": _ref.http_status,
-        "csp-directives": _ref.csp_directives,
-        "git": _ref.git_ref,
-        "git-guides": _ref.git_tutorial_ref,
         "sql": _ref.sql_ref
     }
 

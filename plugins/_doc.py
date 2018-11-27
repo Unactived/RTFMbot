@@ -9,8 +9,10 @@ import discord
 from bs4 import BeautifulSoup
 
 
-async def pythondoc(ctx, text: str):
+async def python_doc(ctx, text: str):
     """Filters python.org results based on your query"""
+
+    text = text.strip('`')
 
     url = "https://docs.python.org/3/genindex-all.html"
     alphabet = '_' + ascii_uppercase
@@ -42,6 +44,8 @@ async def pythondoc(ctx, text: str):
 
 async def _cppreference(language, ctx, text: str):
     """Search something on cppreference"""
+
+    text = text.strip('`')
 
     base_url = 'https://cppreference.com/w/cpp/index.php?title=Special:Search&search=' + text
     url = urllib.parse.quote_plus(base_url, safe=';/?:@&=$,><-[]')
@@ -77,5 +81,40 @@ async def _cppreference(language, ctx, text: str):
 
             await ctx.send(embed=emb)
 
-cdoc = partial(_cppreference, 'C')
-cppdoc = partial(_cppreference, 'C++')
+c_doc = partial(_cppreference, 'C')
+cpp_doc = partial(_cppreference, 'C++')
+
+async def haskell_doc(ctx, text: str):
+    """Search something on wiki.haskell.org"""
+
+    text = text.strip('`')
+
+    snake = '_'.join(text.split(' '))
+
+    base_url = f"https://wiki.haskell.org/index.php?title=Special%3ASearch&profile=default&search={snake}&fulltext=Search"
+    url = urllib.parse.quote_plus(base_url, safe=';/?:@&=$,><-[]')
+
+    async with aiohttp.ClientSession() as client_session:
+        async with client_session.get(url) as response:
+            if response.status != 200:
+                return await ctx.send(f'An error occurred (status code: {response.status}). Retry later.')
+
+            results = BeautifulSoup(await response.text(), 'lxml').find('div', class_='searchresults')
+
+            if results.find('p', class_='mw-search-nonefound') or not results.find('span', id='Page_title_matches'):
+                return await ctx.send("No results")
+
+            # Page_title_matches is first
+            ul = results.find('ul', 'mw-search-results')
+
+            emb = discord.Embed(title='Haskell docs')
+            emb.set_thumbnail(url="https://wiki.haskell.org/wikiupload/thumb/4/4a/HaskellLogoStyPreview-1.png/120px-HaskellLogoStyPreview-1.png")
+
+            content = []
+            for li in ul.find_all('li', limit=10):
+                a = li.find('div', class_='mw-search-result-heading').find('a')
+                content.append(f"[{a.get('title')}](https://wiki.haskell.org{a.get('href')})")
+
+            emb.add_field(name=f'Results for `{text}` :', value='\n'.join(content), inline=False)
+
+            await ctx.send(embed=emb)
