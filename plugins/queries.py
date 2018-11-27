@@ -154,7 +154,16 @@ class Search:
 
         language = lang.strip('`').lower()
 
-        if not lang in self.bot.languages:
+        if not language in self.bot.languages:
+            if language == 'the' and text.startswith('worst language ever '):
+                return await ctx.send("Seriously ? Enter a real name at least")
+            if language == 'a' and text.startswith('real name at least '):
+                return await ctx.send("Oh my god you're so funny -\\_\\_-. But I do not support humour yet.")
+            if language == 'humour':
+                return await ctx.send("I said NOT YET")
+            if language == 'yet' or (language == 'not' and text.startswith('YET ')):
+                return await ctx.send('Oh well, "Congratulations on \'finding\' an easter egg" I guess.')
+
             matches = '\n'.join([lang for lang in self.bot.languages if language in lang][:5])
             if lang == 'javascript':
                 matches += "\nthe worst language ever"
