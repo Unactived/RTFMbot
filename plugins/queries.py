@@ -226,18 +226,9 @@ class Search:
     async def runlist(self, ctx):
         """Give available languages for run command"""
 
-        # Exceeds 6000 characters for the Embed
-
-        # languages = Tio().query_languages()
-        # result = "'{}'".format("`, `".join(languages))
-
-        # emb = discord.Embed(title="Available languages for run command",
-        #     description=f'`{result}`')
-
-        # await ctx.send(embed=emb)
-
-        emb = discord.Embed(title="Available languages for run command")
-        emb.add_field(name="Doesn't fit here", value="[See yourself](https://hastebin.com/raw/axomisozaf)")
+        emb = discord.Embed(title=f"{len(self.bot.languages)} available languages for run command")
+        emb.add_field(name="Doesn't fit here",
+            value='You can view them in the README on [Github](https://github.com/FrenchMasterSword/RTFMbot "and leave a star ! ^^")')
 
         await ctx.send(embed=emb)
 
