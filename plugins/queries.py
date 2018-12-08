@@ -148,7 +148,7 @@ class Search:
         # Powered by tio.run
 
         options = {
-            'conso': False,
+            'stats': False,
             'wrapped': False
         }
 
@@ -206,7 +206,7 @@ class Search:
         # remove token
         cleaned = re.sub(re.escape(output[:16]), '', output)
 
-        if not options['conso']:
+        if not options['stats']:
             try:
                 start = cleaned.rindex("Real time: ")
                 end = cleaned.rindex("%\nExit code: ")
