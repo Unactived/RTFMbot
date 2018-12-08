@@ -251,6 +251,7 @@ haystack
 hbcht
 hdbf
 hexagony
+hobbes
 hodor
 homespring
 hspal
@@ -287,6 +288,7 @@ k-ngn
 k-ok
 kavod
 klein
+koberi-c
 kotlin
 ksh
 labyrinth
