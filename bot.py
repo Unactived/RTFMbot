@@ -4,6 +4,7 @@ import aiohttp
 import discord
 import json
 from discord.ext import commands
+from yaml import load as yaml_load
 
 extensions = (
     'plugins.owner',
@@ -72,6 +73,8 @@ class RTFM(commands.Bot):
         self.config = config
         with open('RTFMbot-master/languages.txt', 'r') as file:
             self.languages = tuple(file.read().split('\n'))
+        with open('RTFMbot-master/default_langs.yml', 'r') as file:
+            self.default = yaml_load(file)
 
         for extension in extensions:
             try:

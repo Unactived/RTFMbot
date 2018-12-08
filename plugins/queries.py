@@ -144,13 +144,31 @@ class Search:
 
     @commands.command(aliases=['exec'])
     async def run(self, ctx, lang, *, text: str):
-        """Execute on a distant server and print results of a code in a given language"""
+        """Execute code in a given programming language"""
         # Powered by tio.run
 
-        conso = False
+        options = {
+            'conso': False,
+            'wrapped': False
+        }
 
         language = lang.strip('`').lower()
+        text = text.split(' ')
 
+        for i,option in enumerate(options):
+            if f'--{option}' in text[:len(options) - i]:
+                options[option] = True
+                text.remove(f'--{option}')
+
+        text = ' '.join(text)
+        code = text.strip('`')
+
+        firstLine = code.splitlines()[0]
+        if re.fullmatch(r'( |[0-9A-z]*)\b', firstLine):
+            code = code[len(firstLine)+1:]
+
+        if language in self.bot.default:
+            language = self.bot.default[language]
         if not language in self.bot.languages:
             matches = '\n'.join([lang for lang in self.bot.languages if language in lang][:10])
             if language == 'javascript':
@@ -161,14 +179,24 @@ class Search:
 
             return await ctx.send(message)
 
-        if text.endswith('--conso'):
-            text = text[:-7].strip(' ')
-            conso = True
-        code = text.strip('`')
+        if options['wrapped']:
+            print(code)
+            mapping = {
+                'c-': '#include <stdio.h>\nint main() {code}',
+                'cs-': 'using System;class Program {static void Main(string[] args) {code}}',
+                'cpp-': '#include <iostream>\nint main() {code}',
+                'java-': 'public class Main {public static void main(String[] args) {code}}'
+            }
 
-        firstLine = code.splitlines()[0]
-        if re.fullmatch(r'( |[0-9A-z]*)\b', firstLine):
-            code = code[len(firstLine)+1:]
+            if not (any(map(lambda x: language.startswith(x), mapping))) or language in ('cs-mono-shell', 'cs-csi'):
+                return await ctx.send(f'`{language}` cannot be wrapped')
+
+            for beginning in mapping:
+                if language.startswith(beginning):
+                    code = mapping[beginning].replace('code', code)
+                    break
+
+            print(code)
 
         site = Tio()
         req = TioRequest(language, code)
@@ -178,10 +206,14 @@ class Search:
         # remove token
         cleaned = re.sub(re.escape(output[:16]), '', output)
 
-        if not conso:
-            start = cleaned.rindex("Real time: ")
-            end = cleaned.rindex("%\nExit code: ")
-            cleaned = cleaned[:start] + cleaned[end+2:]
+        if not options['conso']:
+            try:
+                start = cleaned.rindex("Real time: ")
+                end = cleaned.rindex("%\nExit code: ")
+                cleaned = cleaned[:start] + cleaned[end+2:]
+            except ValueError:
+                # Too much output removes this markers
+                pass
 
         if len(cleaned) > 1991:
             # Mustn't exceed 2000 characters, counting ` and ph\n characters
