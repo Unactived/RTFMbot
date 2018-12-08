@@ -1,10 +1,7 @@
 import os
-import random
 import re
 import sys
 import urllib.parse
-from datetime import datetime
-from functools import reduce
 
 import aiohttp
 import discord
@@ -26,7 +23,7 @@ class Search:
     async def __before_invoke(self, ctx):
         await ctx.trigger_typing()
 
-    @commands.cooldown(1, 5, BucketType.user)
+    @commands.cooldown(1, 8, BucketType.user)
     @commands.command(aliases=['se'])
     async def stack(self, ctx, siteName, *, text: str):
         """Queries given StackExchange website and gives you top results"""
@@ -155,17 +152,8 @@ class Search:
         language = lang.strip('`').lower()
 
         if not language in self.bot.languages:
-            if language == 'the' and text.startswith('worst language ever '):
-                return await ctx.send("Seriously ? Enter a real name at least")
-            if language == 'a' and text.startswith('real name at least '):
-                return await ctx.send("Oh my god you're so funny -\\_\\_-. But I do not support humour yet.")
-            if language == 'humour':
-                return await ctx.send("I said NOT YET")
-            if language == 'yet' or (language == 'not' and text.startswith('YET ')):
-                return await ctx.send('Oh well, "Congratulations on \'finding\' an easter egg" I guess.')
-
-            matches = '\n'.join([lang for lang in self.bot.languages if language in lang][:5])
-            if lang == 'javascript':
+            matches = '\n'.join([lang for lang in self.bot.languages if language in lang][:10])
+            if language == 'javascript':
                 matches += "\nthe worst language ever"
             message = f"`{language}` not available."
             if matches:

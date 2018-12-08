@@ -1,4 +1,5 @@
 PREFIX: 'do '
+SUPPORT_LOG_CHANNEL_ID: 000000000000000000
 
 # Discord access token
 # https://discordapp.com/developers/applications/

@@ -70,7 +70,7 @@ class RTFM(commands.Bot):
                          description=description)
 
         self.config = config
-        with open('languages.txt', 'r') as file:
+        with open('RTFMbot-master/languages.txt', 'r') as file:
             self.languages = tuple(file.read().split('\n'))
 
         for extension in extensions:
