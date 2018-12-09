@@ -16,7 +16,9 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 import _ref, _doc
 from _tio import Tio, TioRequest
 
-class Search:
+class Coding:
+    """To test code and check docs"""
+
     def __init__(self, bot):
         self.bot = bot
 
@@ -142,8 +144,14 @@ class Search:
 
                 await ctx.send(embed=emb)
 
-    @commands.command(aliases=['exec'])
-    async def run(self, ctx, lang, *, text: str):
+    @commands.command(
+help='''run [--wrapped] [--stats] <language> <code>
+
+stats option displays more informations on execution consumption
+wrapped allows you to not put main function in some languages : Java, C, C++ and C# currently''',
+brief='Execute code in a given programming language'
+        )
+    async def run(self, ctx, language, *, code: str):
         """Execute code in a given programming language"""
         # Powered by tio.run
 
@@ -152,35 +160,34 @@ class Search:
             'wrapped': False
         }
 
-        language = lang.strip('`').lower()
-        text = text.split(' ')
+        lang = language.strip('`').lower()
+        code = code.split(' ')
 
         for i,option in enumerate(options):
-            if f'--{option}' in text[:len(options) - i]:
+            if f'--{option}' in code[:len(options) - i]:
                 options[option] = True
-                text.remove(f'--{option}')
+                code.remove(f'--{option}')
 
-        text = ' '.join(text)
-        code = text.strip('`')
+        code = ' '.join(code)
+        text = code.strip('`')
 
-        firstLine = code.splitlines()[0]
+        firstLine = text.splitlines()[0]
         if re.fullmatch(r'( |[0-9A-z]*)\b', firstLine):
-            code = code[len(firstLine)+1:]
+            text = text[len(firstLine)+1:]
 
-        if language in self.bot.default:
-            language = self.bot.default[language]
-        if not language in self.bot.languages:
-            matches = '\n'.join([lang for lang in self.bot.languages if language in lang][:10])
-            if language == 'javascript':
+        if lang in self.bot.default:
+            lang = self.bot.default[lang]
+        if not lang in self.bot.languages:
+            matches = '\n'.join([language for language in self.bot.languages if lang in language][:10])
+            if lang == 'javascript':
                 matches += "\nthe worst language ever"
-            message = f"`{language}` not available."
+            message = f"`{lang}` not available."
             if matches:
                 message = message + f" Did you mean:\n{matches}"
 
             return await ctx.send(message)
 
         if options['wrapped']:
-            print(code)
             mapping = {
                 'c-': '#include <stdio.h>\nint main() {code}',
                 'cs-': 'using System;class Program {static void Main(string[] args) {code}}',
@@ -188,18 +195,18 @@ class Search:
                 'java-': 'public class Main {public static void main(String[] args) {code}}'
             }
 
-            if not (any(map(lambda x: language.startswith(x), mapping))) or language in ('cs-mono-shell', 'cs-csi'):
-                return await ctx.send(f'`{language}` cannot be wrapped')
+            if not (any(map(lambda x: lang.startswith(x), mapping))) or lang in ('cs-mono-shell', 'cs-csi'):
+                return await ctx.send(f'`{lang}` cannot be wrapped')
 
             for beginning in mapping:
-                if language.startswith(beginning):
-                    code = mapping[beginning].replace('code', code)
+                if lang.startswith(beginning):
+                    text = mapping[beginning].replace('code', text)
                     break
 
             print(code)
 
         site = Tio()
-        req = TioRequest(language, code)
+        req = TioRequest(lang, text)
         res = await site.send(req)
         
         output = res.result.decode('utf-8')
@@ -221,26 +228,6 @@ class Search:
 
         # ph, as placeholder, prevents Discord from taking the first line
         await ctx.send(f'```ph\n{cleaned}```')
-
-        # if res.result:
-        #     colour = self.bot.config['GREEN']
-        # elif res.error:
-        #     colour = self.bot.config['RED']
-        # else:
-        #     await ctx.send('No output')
-
-        # emb = discord.Embed(title=language, colour=colour)
-        # emb.set_footer(text="Powered by tio.run")
-
-        # # ph, as placeholder, prevents Discord from taking the first line
-        # # for a markdown
-        # if res.result:
-        #     emb.add_field(name="Output", value=f"```ph\n{res.result}```")
-        # if res.error:
-        #     emb.add_field(name="Error", value=f"```ph\n{res.error}```")
-
-
-        # await ctx.send(embed=emb)
 
     @commands.command()
     async def runlist(self, ctx):
@@ -285,4 +272,4 @@ class Search:
         await ctx.send(embed=emb)
 
 def setup(bot):
-    bot.add_cog(Search(bot))
+    bot.add_cog(Coding(bot))

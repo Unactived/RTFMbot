@@ -9,6 +9,8 @@ from discord.ext import commands
 from dateutil.relativedelta import relativedelta
 
 class Misc:
+    """About the bot and other things"""
+
     def __init__(self, bot):
         self.bot = bot
 
@@ -78,6 +80,47 @@ class Misc:
             emb.set_footer(text="Type do help <module> to get commands list")
 
             return await ctx.send(embed=emb)
+
+        if specific.capitalize() in coglist:
+            cogName = specific.capitalize()
+            cog = self.bot.get_cog(cogName)
+            commands = self.bot.get_cog_commands(cogName)
+
+            emb = discord.Embed(title=f"Commands from {cogName} module", colour=self.bot.config['BLUE_RTFM'],
+                description=cog.__doc__)
+
+            emb.set_footer(text="<argument needed> [optional argument] [arg a|arg b] : either a or b")
+
+            field = []
+
+            for command in sorted(commands, key=lambda x: x.qualified_name):
+                if command.hidden:
+                    continue
+                doc = command.short_doc
+                if command.clean_params or command.aliases:
+                    if command.brief:
+                        signature = command.help.split('\n')[0]
+                    else:
+                        signature = command.signature
+                    doc += f'\n**Usage -** {self.bot.config["PREFIX"]}{signature}'
+
+                emb.add_field(name=command.qualified_name, value=doc)
+
+            return await ctx.send(embed=emb)
+
+        if self.bot.get_command(specific.lower()):
+            command = self.bot.get_command(specific.lower())
+
+            description = command.help
+            if not description.startswith(command.qualified_name):
+                description = f"{command.signature}\n\n{description}"
+
+            emb = discord.Embed(title=f"Help for command {command.qualified_name}", colour=self.bot.config['BLUE_RTFM'],
+                description=description)
+
+            return await ctx.send(embed=emb)
+
+        await ctx.send(f"No module or command named `{specific}`")
 
 
 def setup(bot):
