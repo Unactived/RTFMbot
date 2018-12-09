@@ -108,7 +108,7 @@ class Misc:
 
             return await ctx.send(embed=emb)
 
-        if self.bot.get_command(specific.lower()):
+        if self.bot.get_command(specific.lower()) and not self.bot.get_command(specific.lower()).cog_name == 'Owner':
             command = self.bot.get_command(specific.lower())
 
             description = command.help

@@ -212,6 +212,7 @@ brief='Execute code in a given programming language'
         output = res.result.decode('utf-8')
         # remove token
         cleaned = re.sub(re.escape(output[:16]), '', output)
+        cleaned = re.sub('```', '\`\`\`', cleaned)
 
         if not options['stats']:
             try:
