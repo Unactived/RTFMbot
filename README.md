@@ -45,7 +45,7 @@ It provides some helpful tools:
 
 - Debian man pages (preview from Discord) ([man.cx](https://man.cx/))
   
-- Search questions on given [StackExchange](https://stackexchange.com/)'s website, at least **289** websites
+- Search questions on given [StackExchange](https://stackexchange.com/)'s website (less Area 51) : **289** websites
   
 - Small tools
   - Convert both ways text to numerical representation (UTF-8)

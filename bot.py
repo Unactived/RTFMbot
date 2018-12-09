@@ -89,7 +89,6 @@ class RTFM(commands.Bot):
                                    activity=discord.Game(name=self.config['STATUS']))
         await update_dbl_count(self)
 
-
     async def on_resumed(self):
         print(f'\n[*] {self.user} resumed...')
 
