@@ -71,6 +71,7 @@ class RTFM(commands.Bot):
                          description=description)
 
         self.config = config
+        self.remove_command('help')
         with open('RTFMbot-master/languages.txt', 'r') as file:
             self.languages = tuple(file.read().split('\n'))
         with open('RTFMbot-master/default_langs.yml', 'r') as file:

@@ -60,5 +60,25 @@ class Misc:
 
         await ctx.send(file=file, embed=emb)
 
+    @commands.command()
+    async def help(self, ctx, specific=None):
+        """Give general help or on a specific command or cog"""
+
+        coglist = sorted([cog for cog in self.bot.cogs if cog != 'Owner'])
+
+        if not specific:
+            description = f'**Prefix is `do` (space after)**\n```fix\nThere are {len(coglist)} modules```'
+
+            lines = '\n'.join(coglist)
+            cogs = f"```prolog\n{lines}```"
+
+            emb = discord.Embed(title="RTFM help menu", colour=self.bot.config['BLUE_RTFM'],
+                description=description)
+            emb.add_field(name="Modules", value=cogs)
+            emb.set_footer(text="Type do help <module> to get commands list")
+
+            return await ctx.send(embed=emb)
+
+
 def setup(bot):
     bot.add_cog(Misc(bot))
