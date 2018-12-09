@@ -145,7 +145,7 @@ class Coding:
                 await ctx.send(embed=emb)
 
     @commands.command(
-help='''run [--wrapped] [--stats] <language> <code>
+help='''run <language> [--wrapped] [--stats] <code>
 
 stats option displays more informations on execution consumption
 wrapped allows you to not put main function in some languages : Java, C, C++ and C# currently''',
