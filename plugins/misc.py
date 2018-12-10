@@ -66,7 +66,7 @@ class Misc:
     async def help(self, ctx, specific=None):
         """Give general help or on a specific command or cog"""
 
-        coglist = sorted([cog for cog in self.bot.cogs if cog != 'Owner'])
+        coglist = sorted([cog for cog in self.bot.cogs if cog not in ('Owner', 'ErrorHandler')])
 
         if not specific:
             description = f'**Prefix is `do` (space after)**\n```fix\nThere are {len(coglist)} modules```'
@@ -93,7 +93,7 @@ class Misc:
 
             field = []
 
-            for command in sorted(commands, key=lambda x: x.qualified_name):
+            for command in sorted(commands, key=lambda x: x.name):
                 if command.hidden:
                     continue
                 doc = command.short_doc
@@ -104,7 +104,7 @@ class Misc:
                         signature = command.signature
                     doc += f'\n**Usage -** {self.bot.config["PREFIX"]}{signature}'
 
-                emb.add_field(name=command.qualified_name, value=doc)
+                emb.add_field(name=command.name, value=doc)
 
             return await ctx.send(embed=emb)
 

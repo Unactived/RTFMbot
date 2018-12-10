@@ -10,7 +10,8 @@ extensions = (
     'plugins.owner',
     'plugins.queries',
     'plugins.misc',
-    'plugins.tools'
+    'plugins.tools',
+    'plugins.error_handler'
 )
 
 def _prefix_callable(bot, message):
