@@ -77,7 +77,7 @@ class Misc:
             emb = discord.Embed(title="RTFM help menu", colour=self.bot.config['BLUE_RTFM'],
                 description=description)
             emb.add_field(name="Modules", value=cogs)
-            emb.set_footer(text="Type do help <module> to get commands list")
+            emb.set_footer(text="Type do help <module> to see commands or do help <command>")
 
             return await ctx.send(embed=emb)
 

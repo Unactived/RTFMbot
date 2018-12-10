@@ -236,7 +236,7 @@ brief='Execute code in a given programming language'
 
         emb = discord.Embed(title=f"{len(self.bot.languages)} available languages for run command")
         emb.add_field(name="Doesn't fit here",
-            value='You can view them in the README on [Github](https://github.com/FrenchMasterSword/RTFMbot "and leave a star ! ^^")')
+            value='You can view them in the README on [Github](https://github.com/FrenchMasterSword/RTFMbot/blob/master/languages.txt "and leave a star ! ^^")')
 
         await ctx.send(embed=emb)
 
