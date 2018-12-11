@@ -178,6 +178,10 @@ brief='Execute code in a given programming language'
         code = ' '.join(code)
         text = code.strip('`')
 
+        if not text:
+            # Ensures code isn't empty after removing options
+            raise commands.MissingRequiredArgument(ctx.command.clean_params['code'])
+
         firstLine = text.splitlines()[0]
         if re.fullmatch(r'( |[0-9A-z]*)\b', firstLine):
             text = text[len(firstLine)+1:]
@@ -204,8 +208,6 @@ brief='Execute code in a given programming language'
                 if lang.startswith(beginning):
                     text = self.mapping[beginning].replace('code', text)
                     break
-
-            print(code)
 
         site = Tio()
         req = TioRequest(lang, text)
@@ -238,7 +240,7 @@ brief='Execute code in a given programming language'
 
         emb = discord.Embed(title=f"{len(self.bot.languages)} available languages for run command")
         emb.add_field(name="Doesn't fit here",
-            value='You can view them in the README on [Github](https://github.com/FrenchMasterSword/RTFMbot/blob/master/languages.txt "and leave a star ! ^^")')
+            value='You can view them on [Github](https://github.com/FrenchMasterSword/RTFMbot/blob/master/languages.txt "and leave a star ! ^^")')
 
         await ctx.send(embed=emb)
 

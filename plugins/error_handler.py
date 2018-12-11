@@ -31,7 +31,7 @@ class ErrorHandler:
             content = f"Command invoked with bad argument(s). Check the command's help"
         elif isinstance(error, commands.CommandOnCooldown):
             name = "TimeoutError"
-            content = f"Command in overflow. Retry in `{format(error.retry_after, '.2f')}s`."
+            content = f"Command on cooldown. Retry in `{format(error.retry_after, '.2f')}s`."
         elif isinstance(error, commands.CheckFailure):
             name = "PermissionError"
             content = "Escalation failed: you are not in the sudoers file.\nThis incident will be reported"
@@ -44,8 +44,8 @@ class ErrorHandler:
             await ctx.send(embed=emb)
         elif raised:
             print(f'Context: {ctx.command.qualified_name}', file=sys.stderr)
-            traceback.print_tb(error.original.__traceback__)
-            print(f'{error.original.__class__.__name__}: {error.original}', file=sys.stderr)
+            traceback.print_tb(error.__traceback__)
+            print(f'{error.__class__.__name__}: {error}', file=sys.stderr)
         else:
             print(traceback.format_exc())
 
