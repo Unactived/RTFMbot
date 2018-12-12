@@ -145,10 +145,12 @@ class Coding:
                 await ctx.send(embed=emb)
 
     mapping = {
-        'c-': '#include <stdio.h>\nint main() {code}',
-        'cs-': 'using System;class Program {static void Main(string[] args) {code}}',
-        'cpp-': '#include <iostream>\nint main() {code}',
-        'java-': 'public class Main {public static void main(String[] args) {code}}'
+        'c': '#include <stdio.h>\nint main() {code}',
+        'cpp': '#include <iostream>\nint main() {code}',
+        'cs': 'using System;class Program {static void Main(string[] args) {code}}',
+        'java': 'public class Main {public static void main(String[] args) {code}}',
+        'rust': 'fn main() {code}',
+        'd': 'import std.stdio; void main(){code}'
     }
 
     @commands.command(
@@ -201,11 +203,11 @@ brief='Execute code in a given programming language'
         if options['wrapped']:
             
 
-            if not (any(map(lambda x: lang.startswith(x), self.mapping))) or lang in ('cs-mono-shell', 'cs-csi'):
+            if not (any(map(lambda x: lang.split('-')[0] == x, self.mapping))) or lang in ('cs-mono-shell', 'cs-csi'):
                 return await ctx.send(f'`{lang}` cannot be wrapped')
 
             for beginning in self.mapping:
-                if lang.startswith(beginning):
+                if lang.split('-')[0] == beginning:
                     text = self.mapping[beginning].replace('code', text)
                     break
 
