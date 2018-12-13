@@ -27,7 +27,7 @@ class Coding:
 
     @commands.cooldown(1, 8, BucketType.user)
     @commands.command(aliases=['se'])
-    async def stack(self, ctx, siteName, *, text: str):
+    async def stack(self, ctx, siteName, *, query: str):
         """Queries given StackExchange website and gives you top results"""
 
         if siteName[0].islower() or not siteName in dir(se):
@@ -38,9 +38,9 @@ class Coding:
         site.impose_throttling = True
         site.throttle_stop = False
 
-        qs = site.search(intitle=text)[:3]
+        qs = site.search(intitle=query)[:3]
         if qs:
-            emb = discord.Embed(title=text)
+            emb = discord.Embed(title=query)
             emb.set_thumbnail(url=f'http://s2.googleusercontent.com/s2/favicons?domain_url={site.domain}')
             emb.set_footer(text="Hover for vote stats")
 
@@ -65,24 +65,15 @@ class Coding:
     }
 
     @commands.command(aliases=['doc'])
-    async def documentation(self, ctx, lang, *, text: str):
+    async def documentation(self, ctx, language, *, query: str):
         """Returns element reference from given language"""
 
-        lang = lang.strip('`')
+        lang = language.strip('`')
 
         if not lang.lower() in self.documented:
             return await ctx.send(f"{lang} not available. See {self.bot.config['PREFIX']}doclist for available ones.")
 
-        await self.documented[lang.lower()](ctx, text.strip('`'))
-
-    @commands.command()
-    async def doclist(self, ctx):
-        """Give available technos for reference command"""
-
-        emb = discord.Embed(title="Available technologies for documentation command",
-            description=f"`{'`, `'.join(self.documented)}`")
-
-        await ctx.send(embed=emb)
+        await self.documented[lang.lower()](ctx, query.strip('`'))
 
     def get_content(_, tag):
         """Returns content between two h2 tags"""
@@ -106,10 +97,10 @@ class Coding:
         return content
 
     @commands.command()
-    async def man(self, ctx, *, text: str):
+    async def man(self, ctx, *, page: str):
         """Returns the manual's page for a linux command"""
 
-        base_url = f'https://man.cx/{text}'
+        base_url = f'https://man.cx/{page}'
         url = urllib.parse.quote_plus(base_url, safe=';/?:@&=$,><-[]')
 
         async with aiohttp.ClientSession() as client_session:
@@ -123,7 +114,7 @@ class Coding:
 
                 if not nameTag:
                     # No NAME, no page
-                    return await ctx.send(f'No manual entry for `{text}`. (Debian)')
+                    return await ctx.send(f'No manual entry for `{page}`. (Debian)')
 
                 # Get the two (or less) first parts from the nav aside
                 # The first one is NAME, we already have it in nameTag
@@ -134,7 +125,7 @@ class Coding:
 
                 title = self.get_content(nameTag)
 
-                emb = discord.Embed(title=title, url=f'https://man.cx/{text}')
+                emb = discord.Embed(title=title, url=f'https://man.cx/{page}')
                 emb.set_author(name='Debian Linux man pages')
                 emb.set_thumbnail(url='https://www.debian.org/logos/openlogo-nd-100.png')
 
@@ -188,6 +179,15 @@ brief='Execute code in a given programming language'
         if re.fullmatch(r'( |[0-9A-z]*)\b', firstLine):
             text = text[len(firstLine)+1:]
 
+        quickmap = {
+            'c++': 'cpp',
+            'js': 'javascript',
+            'c#': 'cs'
+        }
+
+        if lang in quickmap:
+            lang = quickmap[lang]
+
         if lang in self.bot.default:
             lang = self.bot.default[lang]
         if not lang in self.bot.languages:
@@ -236,16 +236,6 @@ brief='Execute code in a given programming language'
         # ph, as placeholder, prevents Discord from taking the first line
         await ctx.send(f'```ph\n{cleaned}```')
 
-    @commands.command()
-    async def runlist(self, ctx):
-        """Give available languages for run command"""
-
-        emb = discord.Embed(title=f"{len(self.bot.languages)} available languages for run command")
-        emb.add_field(name="Doesn't fit here",
-            value='You can view them on [Github](https://github.com/FrenchMasterSword/RTFMbot/blob/master/languages.txt "and leave a star ! ^^")')
-
-        await ctx.send(embed=emb)
-
     referred = {
         "csp-directives": _ref.csp_directives,
         "git": _ref.git_ref,
@@ -259,24 +249,40 @@ brief='Execute code in a given programming language'
     }
 
     @commands.command(aliases=['ref'])
-    async def reference(self, ctx, lang, *, text: str):
+    async def reference(self, ctx, language, *, query: str):
         """Returns element reference from given language"""
 
-        lang = lang.strip('`')
+        lang = language.strip('`')
 
         if not lang.lower() in self.referred:
-            return await ctx.send(f"{lang} not available. See {self.bot.config['PREFIX']}reflist for available ones.")
+            return await ctx.send(f"{lang} not available. See `{self.bot.config['PREFIX']}list reference` for available ones.")
 
-        await self.referred[lang.lower()](ctx, text.strip('`'))
+        await self.referred[lang.lower()](ctx, query.strip('`'))
 
     @commands.command()
-    async def reflist(self, ctx):
-        """Give available technos for reference command"""
+    async def list(self, ctx, *, group=None):
+        """Lists available choices for other commands"""
 
-        emb = discord.Embed(title="Available technologies for reference command",
-            description=f"`{'`, `'.join(self.referred)}`")
+        choices = {
+            "references": self.referred,
+            "documentations": self.documented,
+            "wrapped argument": self.mapping
+        }
 
+        if group == 'code execution':
+            emb = discord.Embed(title=f"Available for {group}: {len(self.bot.languages)}",
+                description='View them on [Github](https://github.com/FrenchMasterSword/RTFMbot/blob/master/languages.txt "and leave a star ! ^^")')
+            return await ctx.send(embed=emb)
+
+        if not group in choices:
+            emb = discord.Embed(title="Available listed commands", description=f"`code execution`, `{'`, `'.join(choices)}`")
+            return await ctx.send(embed=emb)
+
+        availables = choices[group]
+        description=f"`{'`, `'.join([*availables])}`"
+        emb = discord.Embed(title=f"Available for {group}: {len(availables)}", description=description)
         await ctx.send(embed=emb)
+
 
 def setup(bot):
     bot.add_cog(Coding(bot))
