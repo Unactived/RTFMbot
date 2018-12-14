@@ -196,6 +196,7 @@ explode
 extrac
 face
 factor
+false
 fantom
 felix
 fernando
@@ -370,6 +371,7 @@ pari-gp
 pascal-fpc
 path
 pbrain
+perl4
 perl5
 perl6
 phoenix
