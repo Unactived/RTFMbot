@@ -94,6 +94,7 @@ bwfuckery
 c-clang
 c-gcc
 c-tcc
+calc2
 canvas
 cardinal
 carol-dave
