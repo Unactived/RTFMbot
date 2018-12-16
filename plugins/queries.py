@@ -199,8 +199,6 @@ brief='Execute code in a given programming language'
             return await ctx.send(message)
 
         if options['wrapped']:
-            
-
             if not (any(map(lambda x: lang.split('-')[0] == x, self.mapping))) or lang in ('cs-mono-shell', 'cs-csi'):
                 return await ctx.send(f'`{lang}` cannot be wrapped')
 

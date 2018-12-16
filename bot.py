@@ -42,6 +42,13 @@ async def update_dbl_count(bot):
     async with aiohttp.ClientSession() as aioclient:
         await aioclient.post(url, data=payload, headers=headers)
 
+    url = f"https://discord.bots.gg/api/v1/bots/{bot.user.id}/stats"
+    headers = {"Authorization" : bot.config['DBGG_TOKEN'], "Content-Type": "application/json"}
+    payload = {"guildCount"  : guildCount}
+
+    async with aiohttp.ClientSession() as aioclient:
+        await aioclient.post(url, data=json.dumps(payload), headers=headers)
+
     url = f'https://discordbotlist.com/api/bots/{bot.user.id}/stats'
     headers = {"Authorization" : f"Bot {bot.config['DBL_TOKEN']}", "Content-Type": "application/json"}
     payload = {"guilds"  : guildCount, "users": usersCount}
