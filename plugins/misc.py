@@ -14,6 +14,13 @@ class Misc:
     def __init__(self, bot):
         self.bot = bot
 
+    def get_commands(self, cog):
+        # WeGamersUnite :)
+        for command in vars(type(cog)).values():
+            if not isinstance(command, commands.Command) or command.hidden:
+                continue
+            yield command
+
     @commands.command()
     async def info(self, ctx):
         """Print some info and useful links about the bot"""
@@ -84,7 +91,7 @@ class Misc:
         if specific.capitalize() in coglist:
             cogName = specific.capitalize()
             cog = self.bot.get_cog(cogName)
-            commands = self.bot.get_cog_commands(cogName)
+            commandsList = self.get_commands(cog)
 
             emb = discord.Embed(title=f"Commands from {cogName} module", colour=self.bot.config['BLUE_RTFM'],
                 description=cog.__doc__)
@@ -93,7 +100,7 @@ class Misc:
 
             field = []
 
-            for command in sorted(commands, key=lambda x: x.name):
+            for command in commandsList:
                 if command.hidden:
                     continue
                 doc = command.short_doc
@@ -104,7 +111,7 @@ class Misc:
                         signature = command.signature
                     doc += f'\n**Usage -** {self.bot.config["PREFIX"]}{signature}'
 
-                emb.add_field(name=command.name, value=doc)
+                emb.add_field(name=command.name, value=doc, inline=False)
 
             return await ctx.send(embed=emb)
 

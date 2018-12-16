@@ -96,7 +96,7 @@ class RTFM(commands.Bot):
         print('-------------------------------------------\n')
         await self.change_presence(status=self.config['STATUS_TYPE'],
                                    activity=discord.Game(name=self.config['STATUS']))
-        await update_dbl_count(self)
+        # await update_dbl_count(self)
 
     async def on_resumed(self):
         print(f'\n[*] {self.user} resumed...')

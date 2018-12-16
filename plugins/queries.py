@@ -25,57 +25,7 @@ class Coding:
     async def __before_invoke(self, ctx):
         await ctx.trigger_typing()
 
-    @commands.cooldown(1, 8, BucketType.user)
-    @commands.command(aliases=['se'])
-    async def stack(self, ctx, siteName, *, query: str):
-        """Queries given StackExchange website and gives you top results"""
-
-        if siteName[0].islower() or not siteName in dir(se):
-            await ctx.send(f"{siteName} does not appear to be in the StackExchange network."
-                " Check the case and the spelling.")
-
-        site = se.Site(getattr(se, siteName), self.bot.config['SE_KEY'])
-        site.impose_throttling = True
-        site.throttle_stop = False
-
-        qs = site.search(intitle=query)[:3]
-        if qs:
-            emb = discord.Embed(title=query)
-            emb.set_thumbnail(url=f'http://s2.googleusercontent.com/s2/favicons?domain_url={site.domain}')
-            emb.set_footer(text="Hover for vote stats")
-
-            for q in qs:
-                # Fetch question's data, include vote_counts and answers
-                q = site.question(q.id, filter="!b1MME4lS1P-8fK")
-                emb.add_field(name=f"`{len(q.answers)} answers` Score : {q.score}",
-                              value=f'[{q.title}](https://{site.domain}/q/{q.id}'
-                                    f' "{q.up_vote_count}🔺|{q.down_vote_count}🔻")',
-                              inline=False)
-
-            await ctx.send(embed=emb)
-        else:
-            await ctx.send("No results")
-
-    # TODO: lua, java, javascript, asm
-    documented = {
-        'c': _doc.c_doc,
-        'cpp': _doc.cpp_doc,
-        'haskell': _doc.haskell_doc,
-        'python': _doc.python_doc        
-    }
-
-    @commands.command(aliases=['doc'])
-    async def documentation(self, ctx, language, *, query: str):
-        """Returns element reference from given language"""
-
-        lang = language.strip('`')
-
-        if not lang.lower() in self.documented:
-            return await ctx.send(f"{lang} not available. See {self.bot.config['PREFIX']}doclist for available ones.")
-
-        await self.documented[lang.lower()](ctx, query.strip('`'))
-
-    def get_content(_, tag):
+    def get_content(self, tag):
         """Returns content between two h2 tags"""
 
         bssiblings = tag.next_siblings
@@ -96,45 +46,6 @@ class Coding:
 
         return content
 
-    @commands.command()
-    async def man(self, ctx, *, page: str):
-        """Returns the manual's page for a linux command"""
-
-        base_url = f'https://man.cx/{page}'
-        url = urllib.parse.quote_plus(base_url, safe=';/?:@&=$,><-[]')
-
-        async with aiohttp.ClientSession() as client_session:
-            async with client_session.get(url) as response:
-                if response.status != 200:
-                    return await ctx.send('An error occurred (status code: {response.status}). Retry later.')
-
-                soup = BeautifulSoup(await response.text(), 'lxml')
-
-                nameTag = soup.find('h2', string='NAME\n')
-
-                if not nameTag:
-                    # No NAME, no page
-                    return await ctx.send(f'No manual entry for `{page}`. (Debian)')
-
-                # Get the two (or less) first parts from the nav aside
-                # The first one is NAME, we already have it in nameTag
-                contents = soup.find_all('nav', limit=2)[1].find_all('li', limit=3)[1:]
-
-                if contents[-1].string == 'COMMENTS':
-                    contents.remove(-1)
-
-                title = self.get_content(nameTag)
-
-                emb = discord.Embed(title=title, url=f'https://man.cx/{page}')
-                emb.set_author(name='Debian Linux man pages')
-                emb.set_thumbnail(url='https://www.debian.org/logos/openlogo-nd-100.png')
-
-                for tag in contents:
-                    h2 = tuple(soup.find(attrs={'name': tuple(tag.children)[0].get('href')[1:]}).parents)[0]
-                    emb.add_field(name=tag.string, value=self.get_content(h2))
-
-                await ctx.send(embed=emb)
-
     mapping = {
         'c': '#include <stdio.h>\nint main() {code}',
         'cpp': '#include <iostream>\nint main() {code}',
@@ -144,11 +55,31 @@ class Coding:
         'd': 'import std.stdio; void main(){code}'
     }
 
+    referred = {
+        "csp-directives": _ref.csp_directives,
+        "git": _ref.git_ref,
+        "git-guides": _ref.git_tutorial_ref,
+        "haskell": _ref.haskell_ref,
+        "html5": _ref.html_ref,
+        "http-headers": _ref.http_headers,
+        "http-methods": _ref.http_methods,
+        "http-status-codes": _ref.http_status,
+        "sql": _ref.sql_ref
+    }
+
+    # TODO: lua, java, javascript, asm
+    documented = {
+        'c': _doc.c_doc,
+        'cpp': _doc.cpp_doc,
+        'haskell': _doc.haskell_doc,
+        'python': _doc.python_doc        
+    }
+
     @commands.command(
 help='''run <language> [--wrapped] [--stats] <code>
 
 stats option displays more informations on execution consumption
-wrapped allows you to not put main function in some languages : Java, C, C++ and C# currently''',
+wrapped allows you to not put main function in some languages, which you can see in `list wrapped argument`''',
 brief='Execute code in a given programming language'
         )
     async def run(self, ctx, language, *, code: str):
@@ -232,18 +163,6 @@ brief='Execute code in a given programming language'
         # ph, as placeholder, prevents Discord from taking the first line
         await ctx.send(f'```ph\n{cleaned}```')
 
-    referred = {
-        "csp-directives": _ref.csp_directives,
-        "git": _ref.git_ref,
-        "git-guides": _ref.git_tutorial_ref,
-        "haskell": _ref.haskell_ref,
-        "html5": _ref.html_ref,
-        "http-headers": _ref.http_headers,
-        "http-methods": _ref.http_methods,
-        "http-status-codes": _ref.http_status,
-        "sql": _ref.sql_ref
-    }
-
     @commands.command(aliases=['ref'])
     async def reference(self, ctx, language, *, query: str):
         """Returns element reference from given language"""
@@ -254,6 +173,87 @@ brief='Execute code in a given programming language'
             return await ctx.send(f"{lang} not available. See `{self.bot.config['PREFIX']}list reference` for available ones.")
 
         await self.referred[lang.lower()](ctx, query.strip('`'))
+
+    @commands.command(aliases=['doc'])
+    async def documentation(self, ctx, language, *, query: str):
+        """Returns element reference from given language"""
+
+        lang = language.strip('`')
+
+        if not lang.lower() in self.documented:
+            return await ctx.send(f"{lang} not available. See {self.bot.config['PREFIX']}doclist for available ones.")
+
+        await self.documented[lang.lower()](ctx, query.strip('`'))
+
+    @commands.command()
+    async def man(self, ctx, *, page: str):
+        """Returns the manual's page for a (mostly Debian) linux command"""
+
+        base_url = f'https://man.cx/{page}'
+        url = urllib.parse.quote_plus(base_url, safe=';/?:@&=$,><-[]')
+
+        async with aiohttp.ClientSession() as client_session:
+            async with client_session.get(url) as response:
+                if response.status != 200:
+                    return await ctx.send('An error occurred (status code: {response.status}). Retry later.')
+
+                soup = BeautifulSoup(await response.text(), 'lxml')
+
+                nameTag = soup.find('h2', string='NAME\n')
+
+                if not nameTag:
+                    # No NAME, no page
+                    return await ctx.send(f'No manual entry for `{page}`. (Debian)')
+
+                # Get the two (or less) first parts from the nav aside
+                # The first one is NAME, we already have it in nameTag
+                contents = soup.find_all('nav', limit=2)[1].find_all('li', limit=3)[1:]
+
+                if contents[-1].string == 'COMMENTS':
+                    contents.remove(-1)
+
+                title = self.get_content(nameTag)
+
+                emb = discord.Embed(title=title, url=f'https://man.cx/{page}')
+                emb.set_author(name='Debian Linux man pages')
+                emb.set_thumbnail(url='https://www.debian.org/logos/openlogo-nd-100.png')
+
+                for tag in contents:
+                    h2 = tuple(soup.find(attrs={'name': tuple(tag.children)[0].get('href')[1:]}).parents)[0]
+                    emb.add_field(name=tag.string, value=self.get_content(h2))
+
+                await ctx.send(embed=emb)
+
+    @commands.cooldown(1, 8, BucketType.user)
+    @commands.command(aliases=['se'])
+    async def stack(self, ctx, siteName, *, query: str):
+        """Queries given StackExchange website and gives you top results"""
+
+        if siteName[0].islower() or not siteName in dir(se):
+            await ctx.send(f"{siteName} does not appear to be in the StackExchange network."
+                " Check the case and the spelling.")
+
+        site = se.Site(getattr(se, siteName), self.bot.config['SE_KEY'])
+        site.impose_throttling = True
+        site.throttle_stop = False
+
+        qs = site.search(intitle=query)[:3]
+        if qs:
+            emb = discord.Embed(title=query)
+            emb.set_thumbnail(url=f'http://s2.googleusercontent.com/s2/favicons?domain_url={site.domain}')
+            emb.set_footer(text="Hover for vote stats")
+
+            for q in qs:
+                # Fetch question's data, include vote_counts and answers
+                q = site.question(q.id, filter="!b1MME4lS1P-8fK")
+                emb.add_field(name=f"`{len(q.answers)} answers` Score : {q.score}",
+                              value=f'[{q.title}](https://{site.domain}/q/{q.id}'
+                                    f' "{q.up_vote_count}🔺|{q.down_vote_count}🔻")',
+                              inline=False)
+
+            await ctx.send(embed=emb)
+        else:
+            await ctx.send("No results")
 
     @commands.command()
     async def list(self, ctx, *, group=None):
