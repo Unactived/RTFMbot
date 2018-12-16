@@ -14,6 +14,7 @@ from discord.ext.commands.cooldowns import BucketType
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 import _ref, _doc
+from _used import typing
 from _tio import Tio, TioRequest
 
 class Coding:
@@ -21,9 +22,6 @@ class Coding:
 
     def __init__(self, bot):
         self.bot = bot
-
-    async def __before_invoke(self, ctx):
-        await ctx.trigger_typing()
 
     def get_content(self, tag):
         """Returns content between two h2 tags"""
@@ -46,7 +44,7 @@ class Coding:
 
         return content
 
-    mapping = {
+    wrapping = {
         'c': '#include <stdio.h>\nint main() {code}',
         'cpp': '#include <iostream>\nint main() {code}',
         'cs': 'using System;class Program {static void Main(string[] args) {code}}',
@@ -82,6 +80,7 @@ stats option displays more informations on execution consumption
 wrapped allows you to not put main function in some languages, which you can see in `list wrapped argument`''',
 brief='Execute code in a given programming language'
         )
+    @typing
     async def run(self, ctx, language, *, code: str):
         """Execute code in a given programming language"""
         # Powered by tio.run
@@ -113,7 +112,9 @@ brief='Execute code in a given programming language'
         quickmap = {
             'c++': 'cpp',
             'js': 'javascript',
-            'c#': 'cs'
+            'c#': 'cs',
+            'q#': 'qs',
+            'f#': 'fs'
         }
 
         if lang in quickmap:
@@ -130,12 +131,12 @@ brief='Execute code in a given programming language'
             return await ctx.send(message)
 
         if options['wrapped']:
-            if not (any(map(lambda x: lang.split('-')[0] == x, self.mapping))) or lang in ('cs-mono-shell', 'cs-csi'):
+            if not (any(map(lambda x: lang.split('-')[0] == x, self.wrapping))) or lang in ('cs-mono-shell', 'cs-csi'):
                 return await ctx.send(f'`{lang}` cannot be wrapped')
 
-            for beginning in self.mapping:
+            for beginning in self.wrapping:
                 if lang.split('-')[0] == beginning:
-                    text = self.mapping[beginning].replace('code', text)
+                    text = self.wrapping[beginning].replace('code', text)
                     break
 
         site = Tio()
@@ -164,6 +165,7 @@ brief='Execute code in a given programming language'
         await ctx.send(f'```ph\n{cleaned}```')
 
     @commands.command(aliases=['ref'])
+    @typing
     async def reference(self, ctx, language, *, query: str):
         """Returns element reference from given language"""
 
@@ -175,6 +177,7 @@ brief='Execute code in a given programming language'
         await self.referred[lang.lower()](ctx, query.strip('`'))
 
     @commands.command(aliases=['doc'])
+    @typing
     async def documentation(self, ctx, language, *, query: str):
         """Returns element reference from given language"""
 
@@ -186,6 +189,7 @@ brief='Execute code in a given programming language'
         await self.documented[lang.lower()](ctx, query.strip('`'))
 
     @commands.command()
+    @typing
     async def man(self, ctx, *, page: str):
         """Returns the manual's page for a (mostly Debian) linux command"""
 
@@ -226,8 +230,9 @@ brief='Execute code in a given programming language'
 
     @commands.cooldown(1, 8, BucketType.user)
     @commands.command(aliases=['se'])
+    @typing
     async def stack(self, ctx, siteName, *, query: str):
-        """Queries given StackExchange website and gives you top results"""
+        """Queries given StackExchange website and gives you top results. siteName is case-sensitive."""
 
         if siteName[0].islower() or not siteName in dir(se):
             await ctx.send(f"{siteName} does not appear to be in the StackExchange network."
@@ -262,7 +267,7 @@ brief='Execute code in a given programming language'
         choices = {
             "references": self.referred,
             "documentations": self.documented,
-            "wrapped argument": self.mapping
+            "wrapped argument": self.wrapping
         }
 
         if group == 'code execution':

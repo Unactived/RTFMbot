@@ -1,8 +1,10 @@
+import functools
 import html
 import re
 
 import aiohttp
 import bs4
+from discord.ext import commands
 
 def html_to_md(string):
     string = re.sub('<code>|</code>', '`', string)
@@ -31,3 +33,11 @@ def tags_to_text(contents, url):
             result.append(html_to_md(str(tag)))
 
     return ''.join(result)
+
+def typing(func):
+    @functools.wraps(func)
+    async def wrapped(*args, **kwargs):
+        context = args[0] if isinstance(args[0], commands.Context) else args[1]
+        async with context.typing():
+            await func(*args, **kwargs)
+    return wrapped
