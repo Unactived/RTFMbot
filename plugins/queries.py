@@ -109,6 +109,28 @@ brief='Execute code in a given programming language'
             buffer = BytesIO()
             await ctx.message.attachments[0].save(buffer)
             text = buffer.read().decode('utf-8')
+        elif code.split(' ')[-1].startswith('link='):
+            # Code in hastebin
+            base_url = code.split(' ')[-1][5:].strip('/')
+            if not base_url.startswith('https://hastebin.com/'):
+                return await ctx.send('I only accept https://hastebin.com links')
+            if '/raw/' in base_url:
+                url = base_url
+            else:
+                token = base_url.split('/')[-1]
+                if '.' in token:
+                    token = token[:token.rfind('.')]
+                url = f'https://hastebin.com/raw/{token}'
+
+            async with aiohttp.ClientSession() as client_session:
+                async with client_session.get(url) as response:
+                    if response.status == 404:
+                        return await ctx.send(f'Nothing found. Check your link')
+                    elif response.status != 200:
+                        return await ctx.send(f'An error occurred (status code: {response.status}). Retry later.')
+                    text = await response.text()
+                    if len(text) > 20000:
+                        return await ctx.send(f'Code must be shorter than 20,000 characters.')
         else:
             # Code in message
             text = code.strip('`')
