@@ -2,6 +2,7 @@ import os
 import re
 import sys
 import urllib.parse
+from io import BytesIO
 
 import aiohttp
 import discord
@@ -81,7 +82,7 @@ wrapped allows you to not put main function in some languages, which you can see
 brief='Execute code in a given programming language'
         )
     @typing
-    async def run(self, ctx, language, *, code: str):
+    async def run(self, ctx, language, *, code=''):
         """Execute code in a given programming language"""
         # Powered by tio.run
 
@@ -99,15 +100,25 @@ brief='Execute code in a given programming language'
                 code.remove(f'--{option}')
 
         code = ' '.join(code)
-        text = code.strip('`')
+
+        if ctx.message.attachments:
+            # Code in file
+            file = ctx.message.attachments[0]
+            if file.size > 20000:
+                return await ctx.send("File must be smaller than 20 kio.")
+            buffer = BytesIO()
+            await ctx.message.attachments[0].save(buffer)
+            text = buffer.read().decode('utf-8')
+        else:
+            # Code in message
+            text = code.strip('`')
+            firstLine = text.splitlines()[0]
+            if re.fullmatch(r'( |[0-9A-z]*)\b', firstLine):
+                text = text[len(firstLine)+1:]
 
         if not text:
             # Ensures code isn't empty after removing options
             raise commands.MissingRequiredArgument(ctx.command.clean_params['code'])
-
-        firstLine = text.splitlines()[0]
-        if re.fullmatch(r'( |[0-9A-z]*)\b', firstLine):
-            text = text[len(firstLine)+1:]
 
         quickmap = {
             'c++': 'cpp',
