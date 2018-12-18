@@ -81,7 +81,7 @@ stats option displays more informations on execution consumption
 wrapped allows you to not put main function in some languages, which you can see in `list wrapped argument`
 
 <code> may be normal code, but also an attached file, or a [hastebin](https://hastebin.com) link
-In the case you use a link, your command should end with the syntax:
+If you use a link, your command must end with this syntax:
 `link=<hastebin link>`
 for instance : `do run python link=https://hastebin.com/resopedahe.py`
 The link may be the raw version, and with/without the file extension
