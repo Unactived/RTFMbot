@@ -111,7 +111,7 @@ brief='Execute code in a given programming language'
             text = buffer.read().decode('utf-8')
         elif code.split(' ')[-1].startswith('link='):
             # Code in hastebin
-            base_url = code.split(' ')[-1][5:].strip('/')
+            base_url = url = urllib.parse.quote_plus(code.split(' ')[-1][5:].strip('/'), safe=';/?:@&=$,><-[]')
             if not base_url.startswith('https://hastebin.com/'):
                 return await ctx.send('I only accept https://hastebin.com links')
             if '/raw/' in base_url:
@@ -179,7 +179,6 @@ brief='Execute code in a given programming language'
         output = res.result.decode('utf-8')
         # remove token
         cleaned = re.sub(re.escape(output[:16]), '', output)
-        cleaned = re.sub('```', '\`\`\`', cleaned)
 
         if not options['stats']:
             try:
@@ -190,11 +189,23 @@ brief='Execute code in a given programming language'
                 # Too much output removes this markers
                 pass
 
-        if len(cleaned) > 1991:
-            # Mustn't exceed 2000 characters, counting ` and ph\n characters
-            cleaned = cleaned[:1988] + '...'
+        if len(cleaned) > 1991 or cleaned.count('\n') > 40:
+            # If it exceeds 2000 characters (Discord longest message), counting ` and ph\n characters
+            # Or if it floods with more than 40 lines
+            # Create a hastebin and send it back
+            async with aiohttp.ClientSession() as aioclient:
+                post = await aioclient.post('https://hastebin.com/documents', data=cleaned)
+                if post.status != 200:
+                    return await ctx.send(f"Your output was too long, but I couldn't make a hastebin out of it (status code: {post.status})")
+                response = await post.text()
+                token = response[8:-2]
+                link = f'https://hastebin.com/{token}'
+                return await ctx.send(f'Output was too long (more than 2000 characters or 40 lines) so I put it here: {link}')
+
+        cleaned = re.sub('```', '\`\`\`', cleaned)
 
         # ph, as placeholder, prevents Discord from taking the first line
+        # as a language identifier for markdown and remove it
         await ctx.send(f'```ph\n{cleaned}```')
 
     @commands.command(aliases=['ref'])
