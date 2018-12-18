@@ -109,6 +109,7 @@ brief='Execute code in a given programming language'
                 code.remove(f'--{option}')
 
         code = ' '.join(code)
+        text = None
 
         if ctx.message.attachments:
             # Code in file
@@ -140,14 +141,14 @@ brief='Execute code in a given programming language'
                     text = await response.text()
                     if len(text) > 20000:
                         return await ctx.send(f'Code must be shorter than 20,000 characters.')
-        else:
+        elif code.strip('`'):
             # Code in message
             text = code.strip('`')
             firstLine = text.splitlines()[0]
             if re.fullmatch(r'( |[0-9A-z]*)\b', firstLine):
                 text = text[len(firstLine)+1:]
 
-        if not text:
+        if text is None:
             # Ensures code isn't empty after removing options
             raise commands.MissingRequiredArgument(ctx.command.clean_params['code'])
 

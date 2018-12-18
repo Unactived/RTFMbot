@@ -38,6 +38,9 @@ class ErrorHandler:
         elif isinstance(error, discord.Forbidden) or isinstance(error, discord.HTTPException):
             name = "EnvironmentError"
             content = "Error responding. I need following permissions:\n\nEmbed links\nAttach files"
+        elif isinstance(error, UnicodeError):
+            name = "UnicodeError"
+            content = "The bot failed to decode your input or a command output. Make sure you only use UTF-8"
         
         if name is not None:
             emb = discord.Embed(title=name, description=content, colour=self.bot.config['RED'])
