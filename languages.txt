@@ -90,6 +90,7 @@ brian-chuck
 broccoli
 bubblegum
 burlesque
+buzzfizz
 bwfuckery
 c-clang
 c-gcc
@@ -186,6 +187,7 @@ emojicode
 emojicode6
 emotifuck
 emotinomicon
+empty-nest
 enlist
 erlang-escript
 es
@@ -291,6 +293,7 @@ k-ok
 kavod
 klein
 koberi-c
+koka
 kotlin
 ksh
 labyrinth
@@ -434,14 +437,17 @@ rad
 rail
 random-brainfuck
 rapira
+re-direction
 reason
 recursiva
 red
 reng
 reregex
+resplicate
 reticular
 retina
 retina1
+return
 rexx
 rk
 roda
@@ -502,6 +508,7 @@ sqlite
 squirrel
 stackcats
 stacked
+starfish
 starry
 stax
 stencil
@@ -534,6 +541,7 @@ tinybf
 tinylisp
 tir
 tis
+tmbww
 transcript
 trefunge-97-mtfi
 trefunge-98-pyfunge
@@ -561,6 +569,7 @@ visual-basic-net-mono
 visual-basic-net-vbc
 vitsy
 vsl
+wasm
 waterfall
 whirl
 whispers
