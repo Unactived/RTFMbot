@@ -82,7 +82,7 @@ wrapped allows you to not put main function in some languages, which you can see
 
 <code> may be normal code, but also an attached file, or a [hastebin](https://hastebin.com) link
 If you use a link, your command must end with this syntax:
-`link=<hastebin link>`
+`link=<hastebin link>` (no space around `=`)
 for instance : `do run python link=https://hastebin.com/resopedahe.py`
 The link may be the raw version, and with/without the file extension
 

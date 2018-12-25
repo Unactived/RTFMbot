@@ -6,6 +6,8 @@
 7
 99
 a-pear-tree
+abc
+abc-assembler
 accbb
 aceto
 actually
