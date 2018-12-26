@@ -122,7 +122,7 @@ brief='Execute code in a given programming language'
         elif code.split(' ')[-1].startswith('link='):
             # Code in hastebin
             base_url = url = urllib.parse.quote_plus(code.split(' ')[-1][5:].strip('/'), safe=';/?:@&=$,><-[]')
-            if not base_url.startswith('https://hastebin.com/'):
+            if not base_url.startswith('https://hastebin.com/') or not base_url.startswith('https://git.julien00859.be/'):
                 return await ctx.send('I only accept https://hastebin.com links')
             if '/raw/' in base_url:
                 url = base_url
