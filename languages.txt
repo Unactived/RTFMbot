@@ -193,6 +193,7 @@ empty-nest
 enlist
 erlang-escript
 es
+esopunk
 eta
 euphoria3
 euphoria4
@@ -356,6 +357,7 @@ nqt
 ntfjc
 numberwang
 oasis
+obcode
 object-pascal-fpc
 objective-c-clang
 objective-c-gcc
@@ -372,6 +374,7 @@ osabie
 osh
 pain-flak
 paradoc
+parenthesis-hell
 parenthetic
 pari-gp
 pascal-fpc
@@ -387,6 +390,7 @@ physica
 picolisp
 piet
 pike
+pilot-pspilot
 pilot-rpilot
 pingpong
 pip
