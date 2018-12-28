@@ -12,7 +12,7 @@ It provides some helpful tools:
 
 ### Current features
 
-- Code execution through [tio.run](https://tio.run), **584** [languages](languages.txt)
+- Code execution through [tio.run](https://tio.run), more than **600** [languages](languages.txt)
 
 - Search through online documentations
   <details open>
