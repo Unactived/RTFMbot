@@ -27,6 +27,7 @@ aliceml
 alphabeta
 alphuck
 alumin
+amnesiac-from-minsk
 ante
 anyfix
 apl-dyalog
@@ -173,6 +174,7 @@ dstack
 dyvil
 eacal
 ec
+ecndpcaalrlp
 ecpp-c
 ecpp-cpp
 ed
