@@ -1,3 +1,4 @@
+import asyncio
 import os
 import re
 import sys
@@ -87,7 +88,10 @@ for instance : `do run python link=https://hastebin.com/resopedahe.py`
 The link may be the raw version, and with/without the file extension
 
 If the output exceeds 40 lines or Discord max message length, it will be put
-in a new hastebin and the link will be returned.''',
+in a new hastebin and the link will be returned.
+
+When the code returns your output, you may delete it by clicking :x: in the following minute.
+Useful to hide your syntax fails or when you forgot to print the result.''',
 brief='Execute code in a given programming language'
         )
     @typing
@@ -216,7 +220,20 @@ brief='Execute code in a given programming language'
 
         # ph, as placeholder, prevents Discord from taking the first line
         # as a language identifier for markdown and remove it
-        await ctx.send(f'```ph\n{cleaned}```')
+        returned = await ctx.send(f'```ph\n{cleaned}```')
+
+        await returned.add_reaction('❌')
+
+        def check(reaction, user):
+            return user == ctx.author and str(reaction.emoji) == '❌'
+
+        try:
+            await self.bot.wait_for('reaction_add', timeout=60.0, check=check)
+        except asyncio.TimeoutError:
+            pass
+        else:
+            await returned.delete()
+
 
     @commands.command(aliases=['ref'])
     @typing
