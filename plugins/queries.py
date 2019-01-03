@@ -94,7 +94,6 @@ When the code returns your output, you may delete it by clicking :x: in the foll
 Useful to hide your syntax fails or when you forgot to print the result.''',
 brief='Execute code in a given programming language'
         )
-    @typing
     async def run(self, ctx, language, *, code=''):
         """Execute code in a given programming language"""
         # Powered by tio.run
@@ -115,112 +114,113 @@ brief='Execute code in a given programming language'
         code = ' '.join(code)
         text = None
 
-        if ctx.message.attachments:
-            # Code in file
-            file = ctx.message.attachments[0]
-            if file.size > 20000:
-                return await ctx.send("File must be smaller than 20 kio.")
-            buffer = BytesIO()
-            await ctx.message.attachments[0].save(buffer)
-            text = buffer.read().decode('utf-8')
-        elif code.split(' ')[-1].startswith('link='):
-            # Code in hastebin
-            base_url = url = urllib.parse.quote_plus(code.split(' ')[-1][5:].strip('/'), safe=';/?:@&=$,><-[]')
-            if not base_url.startswith('https://hastebin.com/'):
-                return await ctx.send('I only accept https://hastebin.com links')
-            if '/raw/' in base_url:
-                url = base_url
-            else:
-                token = base_url.split('/')[-1]
-                if '.' in token:
-                    token = token[:token.rfind('.')]
-                url = f'https://hastebin.com/raw/{token}'
+        async with ctx.typing():
+            if ctx.message.attachments:
+                # Code in file
+                file = ctx.message.attachments[0]
+                if file.size > 20000:
+                    return await ctx.send("File must be smaller than 20 kio.")
+                buffer = BytesIO()
+                await ctx.message.attachments[0].save(buffer)
+                text = buffer.read().decode('utf-8')
+            elif code.split(' ')[-1].startswith('link='):
+                # Code in hastebin
+                base_url = url = urllib.parse.quote_plus(code.split(' ')[-1][5:].strip('/'), safe=';/?:@&=$,><-[]')
+                if not base_url.startswith('https://hastebin.com/'):
+                    return await ctx.send('I only accept https://hastebin.com links')
+                if '/raw/' in base_url:
+                    url = base_url
+                else:
+                    token = base_url.split('/')[-1]
+                    if '.' in token:
+                        token = token[:token.rfind('.')]
+                    url = f'https://hastebin.com/raw/{token}'
 
-            async with aiohttp.ClientSession() as client_session:
-                async with client_session.get(url) as response:
-                    if response.status == 404:
-                        return await ctx.send(f'Nothing found. Check your link')
-                    elif response.status != 200:
-                        return await ctx.send(f'An error occurred (status code: {response.status}). Retry later.')
-                    text = await response.text()
-                    if len(text) > 20000:
-                        return await ctx.send(f'Code must be shorter than 20,000 characters.')
-        elif code.strip('`'):
-            # Code in message
-            text = code.strip('`')
-            firstLine = text.splitlines()[0]
-            if re.fullmatch(r'( |[0-9A-z]*)\b', firstLine):
-                text = text[len(firstLine)+1:]
+                async with aiohttp.ClientSession() as client_session:
+                    async with client_session.get(url) as response:
+                        if response.status == 404:
+                            return await ctx.send(f'Nothing found. Check your link')
+                        elif response.status != 200:
+                            return await ctx.send(f'An error occurred (status code: {response.status}). Retry later.')
+                        text = await response.text()
+                        if len(text) > 20000:
+                            return await ctx.send(f'Code must be shorter than 20,000 characters.')
+            elif code.strip('`'):
+                # Code in message
+                text = code.strip('`')
+                firstLine = text.splitlines()[0]
+                if re.fullmatch(r'( |[0-9A-z]*)\b', firstLine):
+                    text = text[len(firstLine)+1:]
 
-        if text is None:
-            # Ensures code isn't empty after removing options
-            raise commands.MissingRequiredArgument(ctx.command.clean_params['code'])
+            if text is None:
+                # Ensures code isn't empty after removing options
+                raise commands.MissingRequiredArgument(ctx.command.clean_params['code'])
 
-        quickmap = {
-            'c++': 'cpp',
-            'js': 'javascript',
-            'c#': 'cs',
-            'q#': 'qs',
-            'f#': 'fs'
-        }
+            quickmap = {
+                'c++': 'cpp',
+                'js': 'javascript',
+                'c#': 'cs',
+                'q#': 'qs',
+                'f#': 'fs'
+            }
 
-        if lang in quickmap:
-            lang = quickmap[lang]
+            if lang in quickmap:
+                lang = quickmap[lang]
 
-        if lang in self.bot.default:
-            lang = self.bot.default[lang]
-        if not lang in self.bot.languages:
-            matches = '\n'.join([language for language in self.bot.languages if lang in language][:10])
-            message = f"`{lang}` not available."
-            if matches:
-                message = message + f" Did you mean:\n{matches}"
+            if lang in self.bot.default:
+                lang = self.bot.default[lang]
+            if not lang in self.bot.languages:
+                matches = '\n'.join([language for language in self.bot.languages if lang in language][:10])
+                message = f"`{lang}` not available."
+                if matches:
+                    message = message + f" Did you mean:\n{matches}"
 
-            return await ctx.send(message)
+                return await ctx.send(message)
 
-        if options['wrapped']:
-            if not (any(map(lambda x: lang.split('-')[0] == x, self.wrapping))) or lang in ('cs-mono-shell', 'cs-csi'):
-                return await ctx.send(f'`{lang}` cannot be wrapped')
+            if options['wrapped']:
+                if not (any(map(lambda x: lang.split('-')[0] == x, self.wrapping))) or lang in ('cs-mono-shell', 'cs-csi'):
+                    return await ctx.send(f'`{lang}` cannot be wrapped')
 
-            for beginning in self.wrapping:
-                if lang.split('-')[0] == beginning:
-                    text = self.wrapping[beginning].replace('code', text)
-                    break
+                for beginning in self.wrapping:
+                    if lang.split('-')[0] == beginning:
+                        text = self.wrapping[beginning].replace('code', text)
+                        break
 
-        site = Tio()
-        req = TioRequest(lang, text)
-        res = await site.send(req)
-        
-        output = res.result.decode('utf-8')
-        # remove token
-        cleaned = re.sub(re.escape(output[:16]), '', output)
+            site = Tio()
+            req = TioRequest(lang, text)
+            res = await site.send(req)
 
-        if not options['stats']:
-            try:
-                start = cleaned.rindex("Real time: ")
-                end = cleaned.rindex("%\nExit code: ")
-                cleaned = cleaned[:start] + cleaned[end+2:]
-            except ValueError:
-                # Too much output removes this markers
-                pass
+            output = res.result.decode('utf-8')
+            # remove token
+            cleaned = re.sub(re.escape(output[:16]), '', output)
 
-        if len(cleaned) > 1991 or cleaned.count('\n') > 40:
-            # If it exceeds 2000 characters (Discord longest message), counting ` and ph\n characters
-            # Or if it floods with more than 40 lines
-            # Create a hastebin and send it back
-            async with aiohttp.ClientSession() as aioclient:
-                post = await aioclient.post('https://hastebin.com/documents', data=cleaned)
-                if post.status != 200:
-                    return await ctx.send(f"Your output was too long, but I couldn't make a hastebin out of it (status code: {post.status})")
-                response = await post.text()
-                token = response[8:-2]
-                link = f'https://hastebin.com/{token}'
-                return await ctx.send(f'Output was too long (more than 2000 characters or 40 lines) so I put it here: {link}')
+            if not options['stats']:
+                try:
+                    start = cleaned.rindex("Real time: ")
+                    end = cleaned.rindex("%\nExit code: ")
+                    cleaned = cleaned[:start] + cleaned[end+2:]
+                except ValueError:
+                    # Too much output removes this markers
+                    pass
 
-        cleaned = re.sub('```', '\`\`\`', cleaned)
+            if len(cleaned) > 1991 or cleaned.count('\n') > 40:
+                # If it exceeds 2000 characters (Discord longest message), counting ` and ph\n characters
+                # Or if it floods with more than 40 lines
+                # Create a hastebin and send it back
+                async with aiohttp.ClientSession() as aioclient:
+                    post = await aioclient.post('https://hastebin.com/documents', data=cleaned)
+                    if post.status != 200:
+                        return await ctx.send(f"Your output was too long, but I couldn't make a hastebin out of it (status code: {post.status})")
+                    response = await post.text()
+                    token = response[8:-2]
+                    link = f'https://hastebin.com/{token}'
+                    return await ctx.send(f'Output was too long (more than 2000 characters or 40 lines) so I put it here: {link}')
 
-        # ph, as placeholder, prevents Discord from taking the first line
-        # as a language identifier for markdown and remove it
-        returned = await ctx.send(f'```ph\n{cleaned}```')
+            cleaned = re.sub('```', '\`\`\`', cleaned)
+
+            # ph, as placeholder, prevents Discord from taking the first line
+            # as a language identifier for markdown and remove it
+            returned = await ctx.send(f'```ph\n{cleaned}```')
 
         await returned.add_reaction('❌')
 
