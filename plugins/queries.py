@@ -247,7 +247,8 @@ brief='Execute code in a given programming language'
                     link = f'https://hastebin.com/{token}'
                     return await ctx.send(f'Output was too long (more than 2000 characters or 40 lines) so I put it here: {link}')
 
-            cleaned = re.sub('```', '\`\`\`', cleaned)
+            zero = '\N{zero width space}'
+            cleaned = re.sub('```', f'{zero}`{zero}`{zero}`{zero}', cleaned)
 
             # ph, as placeholder, prevents Discord from taking the first line
             # as a language identifier for markdown and remove it
