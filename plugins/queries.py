@@ -223,9 +223,10 @@ brief='Execute code in a given programming language'
             returned = await ctx.send(f'```ph\n{cleaned}```')
 
         await returned.add_reaction('❌')
+        returnedID = returned.id
 
         def check(reaction, user):
-            return user == ctx.author and str(reaction.emoji) == '❌'
+            return user == ctx.author and str(reaction.emoji) == '❌' and reaction.message.id == returnedID
 
         try:
             await self.bot.wait_for('reaction_add', timeout=60.0, check=check)
