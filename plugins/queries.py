@@ -120,11 +120,14 @@ brief='Execute code in a given programming language'
         compilerFlags = None
         commandLineOptions = None
         arguments = None
+        inputs = []
 
         lines = code.split('\n')
         code = []
         for line in lines:
-            if line.startswith('compiler-flags '):
+            if line.startswith('input '):
+                inputs.append(' '.join(line.split(' ')[1:]).strip('`'))
+            elif line.startswith('compiler-flags '):
                 compilerFlags = ' '.join(line.split(' ')[1:]).strip('`')
             elif line.startswith('command-line-options '):
                 commandLineOptions = ' '.join(line.split(' ')[1:]).strip('`')
@@ -218,6 +221,8 @@ brief='Execute code in a given programming language'
                 req.add_variable_string('TIO_OPTIONS', commandLineOptions)
             if arguments is not None:
                 req.add_variable_string('args', arguments)
+            if inputs:
+                req.add_file_bytes('.input.tio', '\n'.join(inputs))
 
             res = await site.send(req)
 
