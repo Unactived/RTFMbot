@@ -78,9 +78,9 @@ class Coding:
     @commands.command(
 help='''run <language> [--wrapped] [--stats] <code>
 
-for command-line-options and compiler-flags, you may
+for command-line-options, compiler-flags and arguments you may
 add a line starting with this argument, and after a space add
-your options or flags.
+your options, flags or args.
 
 stats option displays more informations on execution consumption
 wrapped allows you to not put main function in some languages, which you can see in `list wrapped argument`
@@ -119,6 +119,7 @@ brief='Execute code in a given programming language'
 
         compilerFlags = None
         commandLineOptions = None
+        arguments = None
 
         lines = code.split('\n')
         code = []
@@ -127,6 +128,8 @@ brief='Execute code in a given programming language'
                 compilerFlags = ' '.join(line.split(' ')[1:]).strip('`')
             elif line.startswith('command-line-options '):
                 commandLineOptions = ' '.join(line.split(' ')[1:]).strip('`')
+            elif line.startswith('arguments '):
+                arguments = ' '.join(line.split(' ')[1:]).strip('`')
             else:
                 code.append(line)
 
@@ -213,6 +216,8 @@ brief='Execute code in a given programming language'
                 req.add_variable_string('TIO_CFLAGS', compilerFlags)
             if commandLineOptions is not None:
                 req.add_variable_string('TIO_OPTIONS', commandLineOptions)
+            if arguments is not None:
+                req.add_variable_string('args', arguments)
 
             res = await site.send(req)
 
