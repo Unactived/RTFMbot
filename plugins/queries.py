@@ -112,6 +112,22 @@ brief='Execute code in a given programming language'
                 code.remove(f'--{option}')
 
         code = ' '.join(code)
+
+        compilerFlags = None
+        commandLineOptions = None
+
+        lines = code.split('\n')
+        code = []
+        for line in lines:
+            if line.startswith('compiler-flags '):
+                compilerFlags = ' '.join(line.split(' ')[1:]).strip('`')
+            elif line.startswith('command-line-options '):
+                commandLineOptions = ' '.join(line.split(' ')[1:]).strip('`')
+            else:
+                code.append(line)
+
+        code = '\n'.join(code)
+
         text = None
 
         async with ctx.typing():
@@ -188,6 +204,12 @@ brief='Execute code in a given programming language'
 
             site = Tio()
             req = TioRequest(lang, text)
+
+            if compilerFlags is not None:
+                req.add_variable_string('TIO_CFLAGS', compilerFlags)
+            if commandLineOptions is not None:
+                req.add_variable_string('TIO_OPTIONS', commandLineOptions)
+
             res = await site.send(req)
 
             output = res.result.decode('utf-8')
