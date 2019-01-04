@@ -78,6 +78,10 @@ class Coding:
     @commands.command(
 help='''run <language> [--wrapped] [--stats] <code>
 
+for command-line-options and compiler-flags, you may
+add a line starting with this argument, and after a space add
+your options or flags.
+
 stats option displays more informations on execution consumption
 wrapped allows you to not put main function in some languages, which you can see in `list wrapped argument`
 
