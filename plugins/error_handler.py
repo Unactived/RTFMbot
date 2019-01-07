@@ -1,4 +1,5 @@
 import sys
+import time
 import traceback
 import discord
 from discord.ext import commands
@@ -37,7 +38,7 @@ class ErrorHandler:
             content = "Escalation failed: you are not in the sudoers file.\nThis incident will be reported"
         elif isinstance(error, discord.Forbidden) or isinstance(error, discord.HTTPException):
             name = "EnvironmentError"
-            content = "Error responding. I need following permissions:\n\nEmbed links\nAttach files\nAdd reactions"
+            content = "An error occured while responding. I need following permissions:\n\nEmbed links\nAttach files\nAdd reactions"
         elif isinstance(error, UnicodeError):
             name = "UnicodeError"
             content = "The bot failed to decode your input or a command output. Make sure you only use UTF-8"
@@ -46,9 +47,9 @@ class ErrorHandler:
             emb = discord.Embed(title=name, description=content, colour=self.bot.config['RED'])
             await ctx.send(embed=emb)
         elif raised:
-            print(f'Context: {ctx.command.qualified_name}', file=sys.stderr)
+            print(f'{time.strftime("%d/%m/%y %H:%M:%S")} | {ctx.command.qualified_name}', file=sys.stderr)
             traceback.print_tb(error.__traceback__)
-            print(f'{error.__class__.__name__}: {error}', file=sys.stderr)
+            print(f'{error.__class__.__name__}: {error}', file=sys.stderr, end='\n\n')
         else:
             print(traceback.format_exc())
 
