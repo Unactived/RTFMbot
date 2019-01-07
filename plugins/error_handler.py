@@ -37,7 +37,7 @@ class ErrorHandler:
             content = "Escalation failed: you are not in the sudoers file.\nThis incident will be reported"
         elif isinstance(error, discord.Forbidden) or isinstance(error, discord.HTTPException):
             name = "EnvironmentError"
-            content = "Error responding. I need following permissions:\n\nEmbed links\nAttach files"
+            content = "Error responding. I need following permissions:\n\nEmbed links\nAttach files\nAdd reactions"
         elif isinstance(error, UnicodeError):
             name = "UnicodeError"
             content = "The bot failed to decode your input or a command output. Make sure you only use UTF-8"
