@@ -51,10 +51,10 @@ class Misc:
         delta = relativedelta(seconds=int(time.time() - Process(os.getpid()).create_time()))
         uptime = ''
 
-        if delta.days: uptime += f'{int(delta.days)} days, '
-        if delta.hours: uptime += f'{int(delta.hours)} hours, '
-        if delta.minutes: uptime += f'{int(delta.minutes)} minutes, '
-        if delta.seconds: uptime += f'{int(delta.seconds)} seconds, '
+        if delta.days: uptime += f'{int(delta.days)} d, '
+        if delta.hours: uptime += f'{int(delta.hours)} h, '
+        if delta.minutes: uptime += f'{int(delta.minutes)} m, '
+        if delta.seconds: uptime += f'{int(delta.seconds)} s, '
 
         emb.add_field(name='Server count', value=str(len(self.bot.guilds)))
         emb.add_field(name='Member count', value=str(sum([guild.member_count for guild in self.bot.guilds])))
@@ -68,6 +68,20 @@ class Misc:
         emb.add_field(name='Links', value=links, inline=False)
 
         await ctx.send(file=file, embed=emb)
+
+    @commands.command()
+    async def ping(self, ctx):
+        """Check how the bot is doing"""
+
+        timePing = time.monotonic()
+        pinger = await ctx.send("Pinging...")
+        diff = '%.2f' % (1000 * (time.monotonic() - timePing))
+
+        emb = discord.Embed()
+        emb.add_field(name="Ping", value=f'`{diff} ms`')
+        emb.add_field(name="Latency", value=f'`{round(self.bot.latency*1000, 2)} ms`')
+
+        await pinger.edit(content=None, embed=emb)
 
     @commands.command()
     async def help(self, ctx, specific=None):
