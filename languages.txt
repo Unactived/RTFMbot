@@ -70,6 +70,7 @@ befunge-98
 befunge-98-pyfunge
 bit
 bitbitjump
+bitch
 bitchanger
 bitcycle
 bitwise
@@ -120,6 +121,7 @@ cil-mono
 cinnamon-gum
 cixl
 cjam
+clam
 clean
 clips
 clisp
@@ -139,6 +141,7 @@ corea
 cow
 cpp-clang
 cpp-gcc
+cpy
 cquents
 crayon
 cryptol
@@ -447,6 +450,7 @@ random-brainfuck
 rapira
 re-direction
 reason
+rebol
 recursiva
 red
 reng
@@ -458,6 +462,7 @@ retina1
 return
 rexx
 rk
+rockstar
 roda
 roop
 rotor
