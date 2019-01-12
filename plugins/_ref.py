@@ -7,9 +7,33 @@ import aiohttp
 import discord
 from bs4 import BeautifulSoup
 from bs4.element import NavigableString
+from markdownify import MarkdownConverter
+
 
 # sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 import _used
+
+
+class DocMarkdownConverter(MarkdownConverter):
+    # def convert_code(self, el, text):
+    #     """Undo `markdownify`s underscore escaping."""
+    #     print(el)
+    #     print(el.strings)
+    #     print(text)
+
+    #     return f"`{text}`".replace('\\', '')
+
+    def convert_pre(self, el, text):
+        """Wrap any codeblocks in `py` for syntax highlighting."""
+
+        code = ''.join(el.strings)
+
+        return f"```py\n{code}```"
+
+
+def markdownify(html):
+    return DocMarkdownConverter(bullets='•').convert(html)
+
 
 async def _process_mozilla_doc(ctx, url):
     """
@@ -32,9 +56,10 @@ async def _process_mozilla_doc(ctx, url):
     #     return await ctx.send(f'No results for `{text}`')
 
     # First tag not empty
-    contents = body.find(id='wikiArticle').find(lambda x: x.name == 'p' and x.text).contents
+    contents = body.find(id='wikiArticle').find(lambda x: x.name == 'p' and x.text)
+    result = markdownify(contents).replace('(/en-US/docs', '(https://developer.mozilla.org/en-US/docs')
 
-    return _used.tags_to_text(contents, url)
+    return result
 
 async def html_ref(ctx, text):
     """Displays informations on an HTML tag"""
@@ -109,7 +134,7 @@ async def _git_main_ref(part, ctx, text):
             emb.set_thumbnail(url='https://git-scm.com/images/logo@2x.png')
 
             for tag in sectors[1:]:
-                content = '\n'.join([_used.tags_to_text(p.contents, url) for p in tag.find_all(lambda x: x.name in ['p', 'pre'])])
+                content = '\n'.join([markdownify(p) for p in tag.find_all(lambda x: x.name in ['p', 'pre'])])
                 emb.add_field(name=tag.find('h2').text, value=content[:1024])
 
             await ctx.send(embed=emb)
@@ -142,7 +167,7 @@ async def sql_ref(ctx, text):
                 if tag.name == 'p':
                     ps.append(tag)
 
-            description = '\n'.join([_used.tags_to_text(p.contents, url) for p in ps])[:2048]
+            description = '\n'.join([markdownify(p) for p in ps])[:2048]
 
             emb = discord.Embed(title=title, url=url, description=description)
             emb.set_author(name='SQL Reference')
@@ -170,7 +195,7 @@ async def haskell_ref(ctx, text):
             soup = BeautifulSoup(await response.text(), 'lxml').find('div', id='content')
 
             title = soup.find('h1', id='firstHeading').string
-            description = '\n'.join([_used.tags_to_text(p.contents, url) for p in  soup.find_all(lambda x: x.name in ['p', 'li'] and tuple(x.parents)[1].name not in ('td', 'li'), limit=6)])[:2048]
+            description = '\n'.join([markdownify(p) for p in  soup.find_all(lambda x: x.name in ['p', 'li'] and tuple(x.parents)[1].name not in ('td', 'li'), limit=6)])[:2048]
 
             emb = discord.Embed(title=title, description=description, url=url)
             emb.set_thumbnail(url="https://wiki.haskell.org/wikiupload/thumb/4/4a/HaskellLogoStyPreview-1.png/120px-HaskellLogoStyPreview-1.png")

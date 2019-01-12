@@ -281,7 +281,7 @@ brief='Execute code in a given programming language'
         lang = language.strip('`')
 
         if not lang.lower() in self.referred:
-            return await ctx.send(f"{lang} not available. See `{self.bot.config['PREFIX']}list reference` for available ones.")
+            return await ctx.send(f"{lang} not available. See `{self.bot.config['PREFIX']}list references` for available ones.")
 
         await self.referred[lang.lower()](ctx, query.strip('`'))
 
@@ -293,7 +293,7 @@ brief='Execute code in a given programming language'
         lang = language.strip('`')
 
         if not lang.lower() in self.documented:
-            return await ctx.send(f"{lang} not available. See {self.bot.config['PREFIX']}doclist for available ones.")
+            return await ctx.send(f"{lang} not available. See `{self.bot.config['PREFIX']}list documentations` for available ones.")
 
         await self.documented[lang.lower()](ctx, query.strip('`'))
 
