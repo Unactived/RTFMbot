@@ -1,10 +1,14 @@
 05ab1e
+1l-a
+1l-aoi
 2dfuck
+2l
 2sable
 3var
 4
 7
 99
+a-gram
 a-pear-tree
 abc
 abc-assembler
@@ -192,6 +196,7 @@ emoji
 emoji-gramming
 emojicode
 emojicode6
+emojicoder
 emotifuck
 emotinomicon
 empty-nest
@@ -304,6 +309,7 @@ koberi-c
 koka
 kotlin
 ksh
+l33t
 labyrinth
 lean
 lily
@@ -333,6 +339,7 @@ maverick
 maxima
 maybelater
 memory-gap
+milambda
 milky-way
 minimal-2d
 miniml
@@ -465,6 +472,7 @@ rk
 rockstar
 roda
 roop
+ropy
 rotor
 rprogn
 rprogn-2
@@ -517,6 +525,7 @@ somme
 spaced
 spim
 spl
+spoon
 sqlite
 squirrel
 stackcats
@@ -561,6 +570,7 @@ trefunge-98-pyfunge
 triangular
 triangularity
 trigger
+triple-threat
 trumpscript
 turtled
 typescript
