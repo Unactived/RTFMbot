@@ -1,3 +1,5 @@
+import hashlib
+
 import discord
 from discord.ext import commands
 
@@ -6,6 +8,7 @@ class Tools:
 
     def __init__(self, bot):
         self.bot = bot
+        self.algos = sorted([h for h in hashlib.algorithms_available if h.islower()])
 
     @commands.command()
     async def ascii(self, ctx, *, text: str):
@@ -48,6 +51,37 @@ class Tools:
             emb.add_field(name=u, value=result)
 
         await ctx.send(embed=emb)
+
+    @commands.command(name='hash')
+    async def _hash(self, ctx, algorithm, *, text: str):
+        """
+        Hashes text with a given algorithm
+        UTF-8, returns under hexadecimal form
+
+        """
+
+        algo = algorithm.lower()
+
+        if not algo in self.algos:
+            matches = '\n'.join([supported for supported in self.algos if algo in supported][:10])
+            message = f"`{algorithm}` not available."
+            if matches:
+                message += f" Did you mean:\n{matches}"
+            return await ctx.send(message)
+
+        try:
+            # Guaranteed one
+            hash_object = getattr(hashlib, algo)(text.encode('utf-8'))
+        except AttributeError:
+            # Available
+            hash_object = hashlib.new(algo, text.encode('utf-8'))
+
+        emb = discord.Embed(title=f"{algorithm} hash",
+                            description=hash_object.hexdigest())
+        emb.set_footer(text=f'Invoked by {str(ctx.message.author)}')
+
+        await ctx.send(embed=emb)
+
 
 def setup(bot):
     bot.add_cog(Tools(bot))
