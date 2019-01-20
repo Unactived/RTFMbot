@@ -4,6 +4,7 @@ import re
 import sys
 import urllib.parse
 from io import BytesIO
+from hashlib import algorithms_available as algorithms
 
 import aiohttp
 import discord
@@ -374,9 +375,10 @@ brief='Execute code in a given programming language'
         """Lists available choices for other commands"""
 
         choices = {
-            "references": self.referred,
             "documentations": self.documented,
-            "wrapped argument": self.wrapping
+            "hashing": sorted([h for h in algorithms if h.islower()]),
+            "references": self.referred,
+            "wrapped argument": self.wrapping,
         }
 
         if group == 'code execution':
