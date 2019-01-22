@@ -183,12 +183,18 @@ brief='Execute code in a given programming language'
                 # Ensures code isn't empty after removing options
                 raise commands.MissingRequiredArgument(ctx.command.clean_params['code'])
 
+            # common identifiers, also used in highlight.js and so discord codeblocks
             quickmap = {
-                'c++': 'cpp',
-                'js': 'javascript',
                 'c#': 'cs',
+                'c++': 'cpp',
+                'csharp': 'cs',
+                'f#': 'fs',
+                'fsharp': 'fs',
+                'js': 'javascript',
+                'nimrod': 'nim',
+                'py': 'python',
                 'q#': 'qs',
-                'f#': 'fs'
+                'sh': 'bash',
             }
 
             if lang in quickmap:
