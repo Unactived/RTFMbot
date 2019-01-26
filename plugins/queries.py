@@ -129,11 +129,11 @@ brief='Execute code in a given programming language'
             if line.startswith('input '):
                 inputs.append(' '.join(line.split(' ')[1:]).strip('`'))
             elif line.startswith('compiler-flags '):
-                compilerFlags = ' '.join(line.split(' ')[1:]).strip('`')
+                compilerFlags = '\n'.join(line.split(' ')[1:]).strip('`')
             elif line.startswith('command-line-options '):
-                commandLineOptions = ' '.join(line.split(' ')[1:]).strip('`')
+                commandLineOptions = '\n'.join(line.split(' ')[1:]).strip('`')
             elif line.startswith('arguments '):
-                arguments = ' '.join(line.split(' ')[1:]).strip('`')
+                arguments = '\n'.join(line.split(' ')[1:]).strip('`')
             else:
                 code.append(line)
 
