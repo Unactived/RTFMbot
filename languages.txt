@@ -108,6 +108,7 @@ canvas
 cardinal
 carol-dave
 carrot
+catholicon
 cauliflower
 ceres
 ceylon
@@ -214,6 +215,7 @@ face
 factor
 false
 fantom
+farnsworth
 felix
 fernando
 feu
@@ -290,6 +292,7 @@ java-openjdk
 javascript-babel-node
 javascript-node
 javascript-spidermonkey
+javascript-v8
 jelly
 jellyfish
 joy
@@ -394,6 +397,7 @@ path
 pbrain
 perl4
 perl5
+perl5-cperl
 perl6
 phoenix
 phooey
@@ -421,6 +425,7 @@ prolog-ciao
 prolog-swi
 proton
 proton2
+ps-core
 pure
 purescript
 purple
@@ -605,6 +610,7 @@ woefully
 wren
 wsf
 wumpus
+wyalhein
 xeec
 xeraph
 yaball
