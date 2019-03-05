@@ -1,6 +1,13 @@
 # RTFM
 
 [![Discord Bots](https://discordbots.org/api/widget/495914599531675648.svg)](https://discordbots.org/bot/495914599531675648)
+<a href="https://discordbotlist.com/bots/495914599531675648">
+    <img
+        width="407"
+        height="150"
+        src="https://discordbotlist.com/bots/495914599531675648/widget"
+        alt="RTFM stats on Discord Bot List">
+</a>
 
 RTFM is a discord bot created to help you as a programmer directly from Discord
 It provides some helpful tools:
