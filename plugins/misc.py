@@ -87,7 +87,7 @@ class Misc(commands.Cog):
     async def help(self, ctx, specific=None):
         """Give general help or on a specific command or cog"""
 
-        coglist = sorted([cog for cog in self.bot.cogs if cog not in ('Owner', 'ErrorHandler')])
+        coglist = sorted([cog for cog in self.bot.cogs if cog not in ('Owner', 'ErrorHandler', 'Jishaku')])
 
         if not specific:
             description = f'**Prefix is `do` (space after)**\n```fix\nThere are {len(coglist)} modules```'
