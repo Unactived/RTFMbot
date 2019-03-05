@@ -9,12 +9,12 @@ from yaml import dump as yaml_dump
 import discord
 from discord.ext import commands
 
-class Owner:
+class Owner(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self._last_eval_result = None
 
-    async def __local_check(self, ctx):
+    async def cog_check(self, ctx):
         return await self.bot.is_owner(ctx.author)
 
     @commands.command(aliases=['streaming', 'listening', 'watching'], hidden=True)

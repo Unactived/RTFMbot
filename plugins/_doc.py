@@ -62,7 +62,7 @@ async def _cppreference(language, ctx, text: str):
             if not len(uls):
                 return await ctx.send('No results')
 
-            if language == 'C': 
+            if language == 'C':
                 wanted = 'w/c/'
                 url = 'https://wikiprogramming.org/wp-content/uploads/2015/05/c-logo-150x150.png'
             else:

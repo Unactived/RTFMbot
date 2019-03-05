@@ -3,7 +3,7 @@ import hashlib
 import discord
 from discord.ext import commands
 
-class Tools:
+class Tools(commands.Cog):
     """Small tools to help programmers"""
 
     def __init__(self, bot):
@@ -45,7 +45,7 @@ class Tools:
 
         emb = discord.Embed(title="Binary conversions")
         index = units.index(unit)
-        
+
         for i,u in enumerate(units):
             result = round(value / 2**((i-index)*10), 14)
             emb.add_field(name=u, value=result)

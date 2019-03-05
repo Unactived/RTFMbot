@@ -8,7 +8,7 @@ import discord
 from discord.ext import commands
 from dateutil.relativedelta import relativedelta
 
-class Misc:
+class Misc(commands.Cog):
     """About the bot and other things"""
 
     def __init__(self, bot):

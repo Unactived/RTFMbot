@@ -20,7 +20,7 @@ import _ref, _doc
 from _used import typing
 from _tio import Tio, TioRequest
 
-class Coding:
+class Coding(commands.Cog):
     """To test code and check docs"""
 
     def __init__(self, bot):
@@ -166,12 +166,12 @@ brief='Execute code in a given programming language'
                 async with aiohttp.ClientSession() as client_session:
                     async with client_session.get(url) as response:
                         if response.status == 404:
-                            return await ctx.send(f'Nothing found. Check your link')
+                            return await ctx.send('Nothing found. Check your link')
                         elif response.status != 200:
                             return await ctx.send(f'An error occurred (status code: {response.status}). Retry later.')
                         text = await response.text()
                         if len(text) > 20000:
-                            return await ctx.send(f'Code must be shorter than 20,000 characters.')
+                            return await ctx.send('Code must be shorter than 20,000 characters.')
             elif code.strip('`'):
                 # Code in message
                 text = code.strip('`')

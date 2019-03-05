@@ -126,7 +126,7 @@ async def _git_main_ref(part, ctx, text):
 
             soup = BeautifulSoup(await response.text(), 'lxml')
             sectors = soup.find_all('div', {'class': 'sect1'}, limit=3)
-    
+
             title = sectors[0].find('p').text
 
             emb = discord.Embed(title=title, url=url)

@@ -5,9 +5,9 @@
 RTFM is a discord bot created to help you as a programmer directly from Discord
 It provides some helpful tools:
 - Languages documentations and references
-  
+
 - Code execution (hundreds of languages availables with their different implementations)
-  
+
 - Almost full StackExchange network questions
 
 ### Current features

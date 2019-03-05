@@ -4,10 +4,10 @@ import traceback
 import discord
 from discord.ext import commands
 
-# Mainly from 
+# Mainly from
 # https://github.com/IdleRPGBot/Bot/blob/4deeb4436e414327687e1621d4568b5abfbc058d/cogs/error_handler.py
 
-class ErrorHandler:
+class ErrorHandler(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         bot.on_command_error = self._on_command_error
@@ -42,7 +42,7 @@ class ErrorHandler:
         elif isinstance(error, UnicodeError):
             name = "UnicodeError"
             content = "The bot failed to decode your input or a command output. Make sure you only use UTF-8"
-        
+
         if name is not None:
             emb = discord.Embed(title=name, description=content, colour=self.bot.config['RED'])
             await ctx.send(embed=emb)
