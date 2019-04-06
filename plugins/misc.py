@@ -102,7 +102,7 @@ class Misc(commands.Cog):
 
             return await ctx.send(embed=emb)
 
-        if specific.capitalize() in coglist:
+        if specific.capitalize() in coglist or specific.capitalize() == 'Jishaku':
             cogName = specific.capitalize()
             cog = self.bot.get_cog(cogName)
             commandsList = self.get_commands(cog)
