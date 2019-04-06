@@ -52,6 +52,7 @@ assembly-fasm
 assembly-gcc
 assembly-jwasm
 assembly-nasm
+ats2
 attache
 aubergine
 awk
@@ -59,6 +60,7 @@ axo
 backhand
 bash
 bc
+bctbww
 beam
 bean
 beanshell
@@ -85,6 +87,7 @@ boolfuck
 bosh
 brachylog
 brachylog2
+bracmat
 braille
 brain-flak
 brainbash
@@ -173,6 +176,7 @@ decimal
 delimit
 deorst
 detour
+dg
 dirty
 dobela
 dodos
@@ -254,6 +258,7 @@ gnuplot
 go
 golfish
 golfscript
+granule
 grass
 grime
 groovy
@@ -477,6 +482,7 @@ retina
 retina1
 return
 rexx
+ring
 rk
 rockstar
 roda
@@ -556,6 +562,7 @@ syms
 taco
 tampio
 tampioi
+tamsin
 tapebagel
 taxi
 tcl
