@@ -18,7 +18,8 @@ from discord.ext.commands.cooldowns import BucketType
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 import _ref, _doc
 from _used import typing
-from _tio import Tio, TioRequest
+# from _tio import Tio, TioRequest
+from _tio import Tio
 
 class Coding(commands.Cog):
     """To test code and check docs"""
@@ -73,7 +74,7 @@ class Coding(commands.Cog):
         'c': _doc.c_doc,
         'cpp': _doc.cpp_doc,
         'haskell': _doc.haskell_doc,
-        'python': _doc.python_doc        
+        'python': _doc.python_doc
     }
 
     @commands.command(
@@ -118,9 +119,9 @@ brief='Execute code in a given programming language'
 
         code = ' '.join(code)
 
-        compilerFlags = None
-        commandLineOptions = None
-        arguments = None
+        compilerFlags = []
+        commandLineOptions = []
+        args = []
         inputs = []
 
         lines = code.split('\n')
@@ -129,13 +130,15 @@ brief='Execute code in a given programming language'
             if line.startswith('input '):
                 inputs.append(' '.join(line.split(' ')[1:]).strip('`'))
             elif line.startswith('compiler-flags '):
-                compilerFlags = '\n'.join(line.split(' ')[1:]).strip('`')
+                compilerFlags.extend(line[15:].strip('`').split(' '))
             elif line.startswith('command-line-options '):
-                commandLineOptions = '\n'.join(line.split(' ')[1:]).strip('`')
+                commandLineOptions.extend(line[21:].strip('`').split(' '))
             elif line.startswith('arguments '):
-                arguments = '\n'.join(line.split(' ')[1:]).strip('`')
+                args.extend(line[10:].strip('`').split(' '))
             else:
                 code.append(line)
+
+        inputs = '\n'.join(inputs)
 
         code = '\n'.join(code)
 
@@ -219,39 +222,25 @@ brief='Execute code in a given programming language'
                         text = self.wrapping[beginning].replace('code', text)
                         break
 
-            site = Tio()
-            req = TioRequest(lang, text)
+            tio = Tio(lang, text, compilerFlags=compilerFlags, inputs=inputs, commandLineOptions=commandLineOptions, args=args)
 
-            if compilerFlags is not None:
-                req.add_variable_string('TIO_CFLAGS', compilerFlags)
-            if commandLineOptions is not None:
-                req.add_variable_string('TIO_OPTIONS', commandLineOptions)
-            if arguments is not None:
-                req.add_variable_string('args', arguments)
-            if inputs:
-                req.add_file_bytes('.input.tio', '\n'.join(inputs))
-
-            res = await site.send(req)
-
-            output = res.result.decode('utf-8')
-            # remove token
-            cleaned = re.sub(re.escape(output[:16]), '', output)
+            result = await tio.send()
 
             if not options['stats']:
                 try:
-                    start = cleaned.rindex("Real time: ")
-                    end = cleaned.rindex("%\nExit code: ")
-                    cleaned = cleaned[:start] + cleaned[end+2:]
+                    start = result.rindex("Real time: ")
+                    end = result.rindex("%\nExit code: ")
+                    result = result[:start] + result[end+2:]
                 except ValueError:
                     # Too much output removes this markers
                     pass
 
-            if len(cleaned) > 1991 or cleaned.count('\n') > 40:
+            if len(result) > 1991 or result.count('\n') > 40:
                 # If it exceeds 2000 characters (Discord longest message), counting ` and ph\n characters
                 # Or if it floods with more than 40 lines
                 # Create a hastebin and send it back
                 async with aiohttp.ClientSession() as aioclient:
-                    post = await aioclient.post('https://hastebin.com/documents', data=cleaned)
+                    post = await aioclient.post('https://hastebin.com/documents', data=result)
                     if post.status != 200:
                         return await ctx.send(f"Your output was too long, but I couldn't make a hastebin out of it (status code: {post.status})")
                     response = await post.text()
@@ -260,11 +249,11 @@ brief='Execute code in a given programming language'
                     return await ctx.send(f'Output was too long (more than 2000 characters or 40 lines) so I put it here: {link}')
 
             zero = '\N{zero width space}'
-            cleaned = re.sub('```', f'{zero}`{zero}`{zero}`{zero}', cleaned)
+            result = re.sub('```', f'{zero}`{zero}`{zero}`{zero}', result)
 
             # ph, as placeholder, prevents Discord from taking the first line
             # as a language identifier for markdown and remove it
-            returned = await ctx.send(f'```ph\n{cleaned}```')
+            returned = await ctx.send(f'```ph\n{result}```')
 
         await returned.add_reaction('❌')
         returnedID = returned.id
@@ -404,3 +393,4 @@ brief='Execute code in a given programming language'
 
 def setup(bot):
     bot.add_cog(Coding(bot))
+
