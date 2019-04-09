@@ -376,13 +376,13 @@ brief='Execute code in a given programming language'
             "wrapped argument": self.wrapping,
         }
 
-        if group == 'code execution':
+        if group == 'languages':
             emb = discord.Embed(title=f"Available for {group}: {len(self.bot.languages)}",
                 description='View them on [Github](https://github.com/FrenchMasterSword/RTFMbot/blob/master/languages.txt "and leave a star ! ^^")')
             return await ctx.send(embed=emb)
 
         if not group in choices:
-            emb = discord.Embed(title="Available listed commands", description=f"`code execution`, `{'`, `'.join(choices)}`")
+            emb = discord.Embed(title="Available listed commands", description=f"`languages`, `{'`, `'.join(choices)}`")
             return await ctx.send(embed=emb)
 
         availables = choices[group]
