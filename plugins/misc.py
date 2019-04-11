@@ -8,18 +8,73 @@ import discord
 from discord.ext import commands
 from dateutil.relativedelta import relativedelta
 
+class Help(commands.HelpCommand):
+    """The bot's help command"""
+
+    BLUE_RTFM = 0x1EDBF8
+    PREFIX = "do " # temporary
+
+    async def send_bot_help(self, mapping):
+        mapping.pop(None)
+        coglist = sorted([cog.qualified_name for cog in mapping if cog.qualified_name not in ('Owner', 'ErrorHandler', 'Jishaku')])
+
+        description = f'**Prefix is `do` (space after)**\n```fix\nThere are {len(coglist)} modules```'
+        lines = '\n'.join(coglist)
+        cogs = f"```prolog\n{lines}```"
+
+        emb = discord.Embed(title="RTFM help menu", colour=self.BLUE_RTFM, description=description)
+        emb.add_field(name="Modules", value=cogs)
+        emb.set_footer(text="Type do help <module> to see commands or do help <command>")
+
+        await self.get_destination().send(embed=emb)
+
+    async def send_cog_help(self, cog):
+        if cog.qualified_name in ('Owner', 'ErrorHandler', 'Jishaku'):
+            return await self.get_destination().send(f'No command called "{cog.qualified_name}" found')
+        commandsList = await self.filter_commands(cog.get_commands())
+
+        emb = discord.Embed(title=f"Commands from {cog.qualified_name} module", colour=self.BLUE_RTFM,
+            description=cog.__doc__)
+
+        emb.set_footer(text="<argument needed> [optional argument] [a|b] : either a or b")
+
+        for command in commandsList:
+            doc = command.short_doc
+            if command.clean_params or command.aliases:
+                if command.brief:
+                    signature = command.help.split('\n')[0]
+                else:
+                    signature = f'{command.qualified_name} {command.signature}'
+                doc += f'\n**Usage -** {self.PREFIX}{signature}'
+
+            emb.add_field(name=command.name, value=doc, inline=False)
+
+        await self.get_destination().send(embed=emb)
+
+    async def send_command_help(self, command):
+        if command.hidden or command.cog.qualified_name in ('Owner', 'ErrorHandler', 'Jishaku'):
+            return await self.get_destination().send(f'No command called "{command.qualified_name}" found')
+        description = command.help
+        if not description.startswith(command.qualified_name):
+            description = f"{command.qualified_name} {command.signature}\n\n{description}"
+
+        emb = discord.Embed(title=f"Help for command {command.qualified_name}", colour=self.BLUE_RTFM,
+        description=description)
+
+        await self.get_destination().send(embed=emb)
+
 class Misc(commands.Cog):
     """About the bot and other things"""
 
     def __init__(self, bot):
         self.bot = bot
+        self._original_help_command = bot.help_command
+        bot.help_command = Help()
+        bot.help_command.cog = self
 
-    def get_commands(self, cog):
-        # WeGamersUnite :)
-        for command in vars(type(cog)).values():
-            if not isinstance(command, commands.Command) or command.hidden:
-                continue
-            yield command
+    def cog_unload(self):
+        # To keep a minimal help
+        self.bot.help_command = self._original_help_command
 
     @commands.command()
     async def info(self, ctx):
@@ -82,67 +137,6 @@ class Misc(commands.Cog):
         emb.add_field(name="Latency", value=f'`{round(self.bot.latency*1000, 2)} ms`')
 
         await pinger.edit(content=None, embed=emb)
-
-    @commands.command()
-    async def help(self, ctx, specific=None):
-        """Give general help or on a specific command or cog"""
-
-        coglist = sorted([cog for cog in self.bot.cogs if cog not in ('Owner', 'ErrorHandler', 'Jishaku')])
-
-        if not specific:
-            description = f'**Prefix is `do` (space after)**\n```fix\nThere are {len(coglist)} modules```'
-
-            lines = '\n'.join(coglist)
-            cogs = f"```prolog\n{lines}```"
-
-            emb = discord.Embed(title="RTFM help menu", colour=self.bot.config['BLUE_RTFM'],
-                description=description)
-            emb.add_field(name="Modules", value=cogs)
-            emb.set_footer(text="Type do help <module> to see commands or do help <command>")
-
-            return await ctx.send(embed=emb)
-
-        if specific.capitalize() in coglist or specific.capitalize() == 'Jishaku':
-            cogName = specific.capitalize()
-            cog = self.bot.get_cog(cogName)
-            commandsList = self.get_commands(cog)
-
-            emb = discord.Embed(title=f"Commands from {cogName} module", colour=self.bot.config['BLUE_RTFM'],
-                description=cog.__doc__)
-
-            emb.set_footer(text="<argument needed> [optional argument] [arg a|arg b] : either a or b")
-
-            field = []
-
-            for command in commandsList:
-                if command.hidden:
-                    continue
-                doc = command.short_doc
-                if command.clean_params or command.aliases:
-                    if command.brief:
-                        signature = command.help.split('\n')[0]
-                    else:
-                        signature = command.signature
-                    doc += f'\n**Usage -** {self.bot.config["PREFIX"]}{signature}'
-
-                emb.add_field(name=command.name, value=doc, inline=False)
-
-            return await ctx.send(embed=emb)
-
-        if self.bot.get_command(specific.lower()) and not self.bot.get_command(specific.lower()).cog_name == 'Owner':
-            command = self.bot.get_command(specific.lower())
-
-            description = command.help
-            if not description.startswith(command.qualified_name):
-                description = f"{command.signature}\n\n{description}"
-
-            emb = discord.Embed(title=f"Help for command {command.qualified_name}", colour=self.bot.config['BLUE_RTFM'],
-                description=description)
-
-            return await ctx.send(embed=emb)
-
-        await ctx.send(f"No module or command named `{specific}`")
-
 
 def setup(bot):
     bot.add_cog(Misc(bot))
