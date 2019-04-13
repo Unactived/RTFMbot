@@ -14,7 +14,7 @@ def _to_tio_string(couple):
         content = ['V' + name, str(len(obj))] + obj
         return to_bytes('\x00'.join(content) + '\x00')
     else:
-        return to_bytes(f"F{name}\x00{len(obj)}\x00{obj}\x00")
+        return to_bytes(f"F{name}\x00{len(to_bytes(obj))}\x00{obj}\x00")
 
 
 class Tio:
@@ -33,6 +33,7 @@ class Tio:
         }
 
         bytes_ = b''.join(map(_to_tio_string, zip(strings.keys(), strings.values()))) + b'R'
+        print(bytes_)
 
         # This returns a DEFLATE-compressed bytestring, which is what the API requires
         self.request = zlib.compress(bytes_, 9)[2:-4]
