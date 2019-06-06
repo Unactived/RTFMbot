@@ -17,7 +17,7 @@ from discord.ext.commands.cooldowns import BucketType
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 import _ref, _doc
-from _used import typing
+from _used import typing, get_raw
 # from _tio import Tio, TioRequest
 from _tio import Tio
 
@@ -87,9 +87,9 @@ your options, flags or args.
 stats option displays more informations on execution consumption
 wrapped allows you to not put main function in some languages, which you can see in `list wrapped argument`
 
-<code> may be normal code, but also an attached file, or a [hastebin](https://hastebin.com) link
+<code> may be normal code, but also an attached file, or a link from [hastebin](https://hastebin.com) or [Github gist](https://gist.github.com)
 If you use a link, your command must end with this syntax:
-`link=<hastebin link>` (no space around `=`)
+`link=<link>` (no space around `=`)
 for instance : `do run python link=https://hastebin.com/resopedahe.py`
 The link may be the raw version, and with/without the file extension
 
@@ -154,17 +154,10 @@ brief='Execute code in a given programming language'
                 await ctx.message.attachments[0].save(buffer)
                 text = buffer.read().decode('utf-8')
             elif code.split(' ')[-1].startswith('link='):
-                # Code in hastebin
-                base_url = url = urllib.parse.quote_plus(code.split(' ')[-1][5:].strip('/'), safe=';/?:@&=$,><-[]')
-                if not base_url.startswith('https://hastebin.com/'):
-                    return await ctx.send('I only accept https://hastebin.com links')
-                if '/raw/' in base_url:
-                    url = base_url
-                else:
-                    token = base_url.split('/')[-1]
-                    if '.' in token:
-                        token = token[:token.rfind('.')]
-                    url = f'https://hastebin.com/raw/{token}'
+                # Code in a webpage
+                base_url = urllib.parse.quote_plus(code.split(' ')[-1][5:].strip('/'), safe=';/?:@&=$,><-[]')
+
+                url = get_raw(base_url)
 
                 async with aiohttp.ClientSession() as client_session:
                     async with client_session.get(url) as response:
@@ -186,7 +179,7 @@ brief='Execute code in a given programming language'
                 # Ensures code isn't empty after removing options
                 raise commands.MissingRequiredArgument(ctx.command.clean_params['code'])
 
-            # common identifiers, also used in highlight.js and so discord codeblocks
+            # common identifiers, also used in highlight.js and thus discord codeblocks
             quickmap = {
                 'c#': 'cs',
                 'c++': 'cpp',
@@ -378,7 +371,7 @@ brief='Execute code in a given programming language'
 
         if group == 'languages':
             emb = discord.Embed(title=f"Available for {group}: {len(self.bot.languages)}",
-                description='View them on [Github](https://github.com/FrenchMasterSword/RTFMbot/blob/master/languages.txt "and leave a star ! ^^")')
+                description=f'View them on [Github]({self.bot.repo}blob/master/languages.txt "and leave a star ! ^^")')
             return await ctx.send(embed=emb)
 
         if not group in choices:

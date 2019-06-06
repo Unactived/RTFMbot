@@ -29,7 +29,7 @@ class ErrorHandler(commands.Cog):
             content = f"Command `{ctx.command.name}` missing 1 required argument: `{error.param.name}`"
         elif isinstance(error, commands.BadArgument):
             name = "TypeError"
-            content = f"Command invoked with bad argument(s). Check the command's help"
+            content = str(error.args[0])
         elif isinstance(error, commands.CommandOnCooldown):
             name = "TimeoutError"
             content = f"Command on cooldown. Retry in `{format(error.retry_after, '.2f')}s`."
@@ -37,8 +37,8 @@ class ErrorHandler(commands.Cog):
             name = "PermissionError"
             content = "Escalation failed: you are not in the sudoers file.\nThis incident will be reported"
         elif isinstance(error, discord.Forbidden) or isinstance(error, discord.HTTPException):
-            name = "EnvironmentError"
-            content = "An error occured while responding. I need following permissions:\n\nEmbed links\nAttach files\nAdd reactions"
+            # We may not be able to send an embed at this point
+            return await ctx.send(f"```An error occured while responding:\n{error.code} - {error.text}\n\nI need following permissions:\n\nEmbed links\nAttach files\nAdd reactions```")
         elif isinstance(error, UnicodeError):
             name = "UnicodeError"
             content = "The bot failed to decode your input or a command output. Make sure you only use UTF-8"

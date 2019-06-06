@@ -33,7 +33,6 @@ class Tio:
         }
 
         bytes_ = b''.join(map(_to_tio_string, zip(strings.keys(), strings.values()))) + b'R'
-        print(bytes_)
 
         # This returns a DEFLATE-compressed bytestring, which is what the API requires
         self.request = zlib.compress(bytes_, 9)[2:-4]

@@ -55,6 +55,8 @@ class RTFM(commands.Bot):
         with open('RTFMbot-master/default_langs.yml', 'r') as file:
             self.default = yaml_load(file)
 
+        self.repo = "https://github.com/FrenchMasterSword/RTFMbot/"
+
         for extension in extensions:
             try:
                 self.load_extension(extension)
@@ -164,4 +166,3 @@ class RTFM(commands.Bot):
 
     def run(self, token):
         super().run(token, reconnect=True)
-

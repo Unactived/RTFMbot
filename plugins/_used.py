@@ -1,38 +1,37 @@
 import functools
-import html
-import re
 
 import aiohttp
-import bs4
 from discord.ext import commands
 
-def html_to_md(string):
-    string = re.sub('<code>|</code>', '`', string)
-    string = re.sub('<strong>|</strong>|<b>|</b>', '**', string)
-    string = re.sub('<em>|</em>|<i>|</i>', '*', string)
-    string = re.sub('<span class="[a-zA-Z0-9]*">|</span>', '', string)
+def get_raw(link):
+    """Returns the url for raw version on a hastebin-like"""
 
-    return html.unescape(string)
+    link = link.strip('<>/') # Allow for no-embed links
 
-def tags_to_text(contents, url):
-    result = []
-    domain = url[:url.index('/', 8)]
-    for tag in contents:
-        if type(tag) == bs4.element.Tag and tag.name == 'a':
-            if not domain in tag.get('href'):
-                href = f"{domain}{tag.get('href')}"
-            else:
-                href = tag.get('href')
-            link = f"[{tag.string}]({href})"
-            if tag.get('title') is not None:
-                link = f'''{link[:-1]} "{tag.get('title')}")'''
-            result.append(link)
-        elif type(tag) == bs4.element.NavigableString:
-            result.append(str(tag.string))
-        else:
-            result.append(html_to_md(str(tag)))
+    authorized = (
+        'https://hastebin.com',
+        'https://gist.github.com',
+        'https://gist.githubusercontent.com'
+    )
 
-    return ''.join(result)
+    if not any([link.startswith(url) for url in authorized]):
+        raise commands.BadArgument(message=f"I only accept links from {', '.join(authorized)}. (Starting with 'http').")
+
+    domain = link.split('/')[2]
+
+    if domain == 'hastebin.com':
+        if '/raw/' in link:
+            return link
+        token = link.split('/')[-1]
+        if '.' in token:
+            token = token[:token.rfind('.')] # removes extension
+        return f'https://hastebin.com/raw/{token}'
+    else:
+        # Github uses redirection so raw -> usercontent and no raw -> normal
+        # We still need to ensure we get a raw version after this potential redirection
+        if '/raw' in link:
+            return link
+        return link + '/raw'
 
 def typing(func):
     @functools.wraps(func)
