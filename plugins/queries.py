@@ -96,7 +96,7 @@ The link may be the raw version, and with/without the file extension
 If the output exceeds 40 lines or Discord max message length, it will be put
 in a new hastebin and the link will be returned.
 
-When the code returns your output, you may delete it by clicking :x: in the following minute.
+When the code returns your output, you may delete it by clicking :wastebasket: in the following minute.
 Useful to hide your syntax fails or when you forgot to print the result.''',
 brief='Execute code in a given programming language'
         )
@@ -248,11 +248,11 @@ brief='Execute code in a given programming language'
             # as a language identifier for markdown and remove it
             returned = await ctx.send(f'```ph\n{result}```')
 
-        await returned.add_reaction('❌')
+        await returned.add_reaction('🗑')
         returnedID = returned.id
 
         def check(reaction, user):
-            return user == ctx.author and str(reaction.emoji) == '❌' and reaction.message.id == returnedID
+            return user == ctx.author and str(reaction.emoji) == '🗑' and reaction.message.id == returnedID
 
         try:
             await self.bot.wait_for('reaction_add', timeout=60.0, check=check)
