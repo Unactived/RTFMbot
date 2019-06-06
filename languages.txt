@@ -317,6 +317,7 @@ klein
 koberi-c
 koka
 kotlin
+krrp
 ksh
 l33t
 labyrinth
