@@ -3,13 +3,12 @@ async-timeout==3.0.1
 attrs==18.2.0
 beautifulsoup4==4.6.3
 chardet==3.0.4
-git+https://github.com/Rapptz/discord.py@rewrite
+discord==1.0.1
 idna==2.7
 idna-ssl==1.1.0
 lxml==4.2.5
 markdownify==0.4.1
 multidict==4.5.1
-pkg-resources==0.0.0
 py-stackexchange==2.2.7
 PyYAML==3.13
 six==1.11.0
