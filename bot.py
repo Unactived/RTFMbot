@@ -146,8 +146,8 @@ class RTFM(commands.Bot):
                 async with aiohttp.ClientSession() as aioclient:
                     await aioclient.post(url, data=payload, headers=headers)
                     # Only website producing 'unclosed connection' warnings
-                    if not aioclient.closed()
-                        aioclient.close()
+                    if not aioclient.closed():
+                        await aioclient.close()
 
                 url = f"https://discord.bots.gg/api/v1/bots/{self.user.id}/stats"
                 headers = {"Authorization" : self.config['DBGG_TOKEN'], "Content-Type": "application/json"}
