@@ -106,6 +106,7 @@ bwfuckery
 c-clang
 c-gcc
 c-tcc
+cakeml
 calc2
 canvas
 cardinal
