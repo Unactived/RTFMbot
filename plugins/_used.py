@@ -33,6 +33,21 @@ def get_raw(link):
             return link
         return link + '/raw'
 
+async def paste(text):
+    """Return an online bin of given text"""
+
+    async with aiohttp.ClientSession() as aioclient:
+        post = await aioclient.post('https://hastebin.com/documents', data=text)
+        if post.status == 200:
+            response = await post.text()
+            return f'https://hastebin.com/{response[8:-2]}'
+
+        # Rollback bin
+        post = await aioclient.post("https://bin.drlazor.be", data={'val':text})
+        if post.status == 200:
+            return post.url
+
+
 def typing(func):
     @functools.wraps(func)
     async def wrapped(*args, **kwargs):

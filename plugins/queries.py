@@ -17,7 +17,7 @@ from discord.ext.commands.cooldowns import BucketType
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 import _ref, _doc
-from _used import typing, get_raw
+from _used import typing, get_raw, paste
 # from _tio import Tio, TioRequest
 from _tio import Tio
 
@@ -232,14 +232,11 @@ brief='Execute code in a given programming language'
                 # If it exceeds 2000 characters (Discord longest message), counting ` and ph\n characters
                 # Or if it floods with more than 40 lines
                 # Create a hastebin and send it back
-                async with aiohttp.ClientSession() as aioclient:
-                    post = await aioclient.post('https://hastebin.com/documents', data=result)
-                    if post.status != 200:
-                        return await ctx.send(f"Your output was too long, but I couldn't make a hastebin out of it (status code: {post.status})")
-                    response = await post.text()
-                    token = response[8:-2]
-                    link = f'https://hastebin.com/{token}'
-                    return await ctx.send(f'Output was too long (more than 2000 characters or 40 lines) so I put it here: {link}')
+                link = await paste(result)
+
+                if link is None:
+                    return await ctx.send("Your output was too long, but I couldn't make an online bin out of it")
+                return await ctx.send(f'Output was too long (more than 2000 characters or 40 lines) so I put it here: {link}')
 
             zero = '\N{zero width space}'
             result = re.sub('```', f'{zero}`{zero}`{zero}`{zero}', result)
