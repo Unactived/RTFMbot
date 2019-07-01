@@ -181,6 +181,7 @@ brief='Execute code in a given programming language'
 
             # common identifiers, also used in highlight.js and thus discord codeblocks
             quickmap = {
+                'asm': 'assembly',
                 'c#': 'cs',
                 'c++': 'cpp',
                 'csharp': 'cs',
@@ -190,6 +191,7 @@ brief='Execute code in a given programming language'
                 'nimrod': 'nim',
                 'py': 'python',
                 'q#': 'qs',
+                'rs': 'rust',
                 'sh': 'bash',
             }
 
