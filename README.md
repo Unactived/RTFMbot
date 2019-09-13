@@ -21,7 +21,7 @@ It provides some helpful tools:
 
 ### Current features
 
-- Code execution through [tio.run](https://tio.run), more than **600** [languages](languages.txt),
+- Code execution through [tio.run](https://tio.run), more than **600** [languages](https://tio.run/languages.json),
   with support for compiler flags, command-line options and arguments ; and various inputs (processed in order).
 
 - Search through online documentations

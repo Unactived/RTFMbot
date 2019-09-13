@@ -112,7 +112,7 @@ brief='Execute code in a given programming language'
         lang = language.strip('`').lower()
         code = code.split(' ')
 
-        for i,option in enumerate(options):
+        for i, option in enumerate(options):
             if f'--{option}' in code[:len(options) - i]:
                 options[option] = True
                 code.remove(f'--{option}')
@@ -370,7 +370,7 @@ brief='Execute code in a given programming language'
 
         if group == 'languages':
             emb = discord.Embed(title=f"Available for {group}: {len(self.bot.languages)}",
-                description=f'View them on [Github]({self.bot.repo}blob/master/languages.txt "and leave a star ! ^^")')
+                description=f'View them on [tio.run](https://tio.run/languages.json)')
             return await ctx.send(embed=emb)
 
         if not group in choices:

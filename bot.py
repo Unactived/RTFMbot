@@ -50,8 +50,8 @@ class RTFM(commands.Bot):
 
         self.config = config
         self.remove_command('help')
-        with open('RTFMbot-master/languages.txt', 'r') as file:
-            self.languages = tuple(file.read().split('\n'))
+        self.languages = ()
+
         with open('RTFMbot-master/default_langs.yml', 'r') as file:
             self.default = yaml_load(file)
 
@@ -62,6 +62,7 @@ class RTFM(commands.Bot):
                 self.load_extension(extension)
             except Exception as e:
                 print(f"Couldn't load the following extension : {extension} ; :{e}", file=sys.stderr)
+
         self.bg_task = self.loop.create_task(self.background_task())
         self.bg_dbl_count = self.loop.create_task(self.background_dbl_count())
 
@@ -104,15 +105,10 @@ class RTFM(commands.Bot):
                             print(f"Couldn't reach languages.json (status code: {response.status}).")
                             continue
 
-                        languages = sorted(json.loads(await response.text()))
-                        textual = '\n'.join(languages)
-                        with open('RTFMbot-master/languages.txt', 'r') as file:
-                            current = file.read()
+                        languages = tuple(sorted(json.loads(await response.text())))
 
-                        if textual != current:
-                            with open('RTFMbot-master/languages.txt', 'w') as file:
-                                file.write(textual)
-
+                        # Rare reassignments
+                        if self.languages != languages:
                             self.languages = languages
 
                 await asyncio.sleep(300) # 5 minutes
