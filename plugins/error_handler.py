@@ -37,8 +37,11 @@ class ErrorHandler(commands.Cog):
             name = "PermissionError"
             content = "Escalation failed: you are not in the sudoers file.\nThis incident will be reported"
         elif isinstance(error, discord.Forbidden) or isinstance(error, discord.HTTPException):
-            # We may not be able to send an embed at this point
-            return await ctx.send(f"```An error occured while responding:\n{error.code} - {error.text}\n\nI need following permissions:\n\nEmbed links\nAttach files\nAdd reactions```")
+            # We may not be able to send an embed or even send a message at this point
+            bot_member = ctx.guild.get_member(self.bot.user.id)
+            can_talk = ctx.channel.permissions_for(bot_member).send_messages
+            if can_talk:
+                return await ctx.send(f"```An error occurred while responding:\n{error.code} - {error.text}\n\nI need following permissions:\n\nEmbed links\nAttach files\nAdd reactions```")
         elif isinstance(error, UnicodeError):
             name = "UnicodeError"
             content = "The bot failed to decode your input or a command output. Make sure you only use UTF-8"
