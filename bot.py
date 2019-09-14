@@ -1,7 +1,6 @@
 import asyncio
 import sys
 
-import aiohttp
 import discord
 import json
 from discord.ext import commands
@@ -52,7 +51,7 @@ class RTFM(commands.Bot):
         self.remove_command('help')
         self.languages = ()
 
-        with open('RTFMbot-master/default_langs.yml', 'r') as file:
+        with open('default_langs.yml', 'r') as file:
             self.default = yaml_load(file)
 
         self.repo = "https://github.com/FrenchMasterSword/RTFMbot/"
@@ -68,6 +67,7 @@ class RTFM(commands.Bot):
         print('-------------------------------------------\n')
         await self.change_presence(status=self.config['STATUS_TYPE'],
                                    activity=discord.Game(name=self.config['STATUS']))
+        self.load_extension('plugins.background')
 
     async def on_resumed(self):
         print(f'\n[*] {self.user} resumed...')

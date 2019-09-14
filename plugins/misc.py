@@ -95,8 +95,7 @@ class Misc(commands.Cog):
         Support by upvoting me [here](https://discordbots.org/bot/495914599531675648/vote "Thanks ^^"), [here](https://botsfordiscord.com/bots/495914599531675648/vote) and [here](https://discordbotlist.com/bots/495914599531675648/upvote)'
 
         info = await self.bot.application_info()
-        path = os.path.join("./RTFMbot-master", "icon.png")
-        file = discord.File(path, "RTFM_logo.png")
+        file = discord.File("icon.png", "RTFM_logo.png")
 
         emb = discord.Embed(title=f"{info.name} card", colour=self.bot.config['BLURPLE'],
             description=info.description)

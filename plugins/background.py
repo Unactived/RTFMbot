@@ -1,19 +1,23 @@
+import json
+
+import aiohttp
 from discord.ext import commands, tasks
 
-class Background(commands.Cog)
+class Background(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.languages_url = 'https://tio.run/languages.json'
-        self.lists_settings = {
-            # url: headers
-            f'https://discordbots.org/api/bots/{bot.user.id}/stats':     {'Authorization' : bot.config['DB_TOKEN']},
-            f'https://botsfordiscord.com/api/bot/{bot.user.id}':         {'Authorization' : bot.config['BFD_TOKEN']},
-            f'https://discord.bots.gg/api/v1/bots/{bot.user.id}/stats':  {'Authorization' : bot.config['DBGG_TOKEN'], 'Content-Type': 'application/json'},
-            f'https://discordbotlist.com/api/bots/{bot.user.id}/stats':  {'Authorization' : f"Bot {bot.config['DBL_TOKEN']}", 'Content-Type': 'application/json'}
-        }
 
+        self.languages_url = 'https://tio.run/languages.json'
         self.update_languages.start()
+
         if bot.user.id == bot.config['ID']:
+            self.lists_settings = {
+                # url: headers
+                f'https://discordbots.org/api/bots/{bot.config["ID"]}/stats':     {'Authorization' : bot.config['DB_TOKEN']},
+                f'https://botsfordiscord.com/api/bot/{bot.config["ID"]}':         {'Authorization' : bot.config['BFD_TOKEN']},
+                f'https://discord.bots.gg/api/v1/bots/{bot.config["ID"]}/stats':  {'Authorization' : bot.config['DBGG_TOKEN'], 'Content-Type': 'application/json'},
+                f'https://discordbotlist.com/api/bots/{bot.config["ID"]}/stats':  {'Authorization' : f"Bot {bot.config['DBL_TOKEN']}", 'Content-Type': 'application/json'}
+            }
             self.update_dbl_count.start()
 
     @tasks.loop(hours=1)
@@ -22,7 +26,6 @@ class Background(commands.Cog)
             async with client_session.get(self.languages_url) as response:
                 if response.status != 200:
                     print(f"Couldn't reach languages.json (status code: {response.status}).")
-
                 languages = tuple(sorted(json.loads(await response.text())))
 
                 # Rare reassignments
@@ -44,10 +47,6 @@ class Background(commands.Cog)
         async with aiohttp.ClientSession() as aioclient:
             for url, headers in self.lists_settings:
                 await aioclient.post(url, data=next(lists_payloads), headers=headers)
-    
-    @update_dbl_count.before_loop
-    async def before_update_dbl_count(self):
-        await self.bot.wait_until_ready()
 
 def setup(bot):
     bot.add_cog(Background(bot))
