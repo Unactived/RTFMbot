@@ -370,7 +370,7 @@ brief='Execute code in a given programming language'
 
         if group == 'languages':
             emb = discord.Embed(title=f"Available for {group}: {len(self.bot.languages)}",
-                description=f'View them on [tio.run](https://tio.run/languages.json)')
+                description=f'View them on [tio.run](https://tio.run/#), or in [JSON format](https://tio.run/languages.json)')
             return await ctx.send(embed=emb)
 
         if not group in choices:
