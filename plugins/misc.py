@@ -8,6 +8,8 @@ import discord
 from discord.ext import commands
 from dateutil.relativedelta import relativedelta
 
+hidden_cogs = ('Owner', 'ErrorHandler', 'Background', 'Jishaku')
+
 class Help(commands.HelpCommand):
     """The bot's help command"""
 
@@ -19,7 +21,7 @@ class Help(commands.HelpCommand):
 
     async def send_bot_help(self, mapping):
         mapping.pop(None)
-        coglist = sorted([cog.qualified_name for cog in mapping if cog.qualified_name not in ('Owner', 'ErrorHandler', 'Jishaku')])
+        coglist = sorted([cog.qualified_name for cog in mapping if cog.qualified_name not in hidden_cogs])
 
         description = f'**Prefix is `do` (space after)**\n```fix\nThere are {len(coglist)} modules```'
         lines = '\n'.join(coglist)
@@ -33,7 +35,7 @@ class Help(commands.HelpCommand):
         await self.get_destination().send(embed=emb)
 
     async def send_cog_help(self, cog):
-        if cog.qualified_name in ('Owner', 'ErrorHandler', 'Jishaku'):
+        if cog.qualified_name in hidden_cogs:
             return await self.get_destination().send(f'No command or cog called "{cog.qualified_name}" found. Remember names are case-sensitive.')
         commandsList = await self.filter_commands(cog.get_commands())
 
@@ -56,7 +58,7 @@ class Help(commands.HelpCommand):
         await self.get_destination().send(embed=emb)
 
     async def send_command_help(self, command):
-        if command.hidden or command.cog.qualified_name in ('Owner', 'ErrorHandler', 'Jishaku'):
+        if command.hidden or command.cog.qualified_name in hidden_cogs:
             return await self.get_destination().send(f'No command or cog called "{command.qualified_name}" found. Remember names are case-sensitive.')
 
         description = command.help

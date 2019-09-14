@@ -5,6 +5,8 @@ from os.path import isfile
 from sys import exit as sys_exit
 from shutil import copyfile
 
+from bot import RTFM
+
 CONFIG_FILE = 'config.yml'
 CONFIG_TEMPLATE = 'config_example.yml'
 
@@ -23,8 +25,6 @@ with open(CONFIG_FILE) as file:
     if not config.get('BOT_TOKEN'):
         print('Discord token is missing in the configuration file, exiting.')
         sys_exit(1)
-
-from bot import RTFM
 
 def run_bot():
     # loop = asyncio.get_event_loop()
