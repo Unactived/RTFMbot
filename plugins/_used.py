@@ -1,56 +1,37 @@
 import functools
-import re
-from urllib.parse import urlparse
 
 import aiohttp
 from discord.ext import commands
 
-
-pastebins = {}
-def pastebin(path_re):
-    def register(func):
-        pastebins[func.__name__.replace('_', '.')] = (func, re.compile(path_re))
-        return func
-    return register
-
-
 def get_raw(link):
     """Returns the url for raw version on a hastebin-like"""
-    address = urlparse(link.strip('<>/'))  # Allow for no-embed links
-    if address.scheme not in ('https', 'http'):
-        raise commands.BadArgument(message=f"Please specify the http scheme to use.")
-    func, regexp = pastebins.get(address.netloc, (None, None))
-    if not func:
-        raise commands.BadArgument(message=f"I only accept links from {', '.join(pastebins)}.")
-    match = regexp.match(address.path)
-    if not match:
-        raise commands.BadArgument(message=f"Wrong URI for {address.netloc}.")
 
-    return func(address, match)
+    link = link.strip('<>/') # Allow for no-embed links
 
+    authorized = (
+        'https://hastebin.com',
+        'https://gist.github.com',
+        'https://gist.githubusercontent.com'
+    )
 
-@pastebin(r'/(raw/(\w+)|(\w+)(\..*)?)')
-def hastebin_com(_address, match):
-    return 'https://hastebin.com/raw/' + (match.group(2) or match.group(3))
+    if not any([link.startswith(url) for url in authorized]):
+        raise commands.BadArgument(message=f"I only accept links from {', '.join(authorized)}. (Starting with 'http').")
 
+    domain = link.split('/')[2]
 
-@pastebin(r'/[^/]+/[0-9a-fA-F]{32}/raw/[0-9a-fA-F]{40}/.*')
-def gist_githubusercontent_com(address, _match):
-    return address.geturl()
-
-
-@pastebin(r'/[^/]+/[0-9a-fA-F]{32}(/raw)?(/)?')
-def gist_github_com(address, match):
-    return 'https://gist.github.com{}{}{}'.format(
-        address.path,
-        '' if match.group(2) else '/',
-        '' if match.group(1) else 'raw')
-
-
-@pastebin(r'/(\w{10})(\..*)?')
-def bin_drlazor_be(address, _match):
-    return address.geturl()
-
+    if domain == 'hastebin.com':
+        if '/raw/' in link:
+            return link
+        token = link.split('/')[-1]
+        if '.' in token:
+            token = token[:token.rfind('.')] # removes extension
+        return f'https://hastebin.com/raw/{token}'
+    else:
+        # Github uses redirection so raw -> usercontent and no raw -> normal
+        # We still need to ensure we get a raw version after this potential redirection
+        if '/raw' in link:
+            return link
+        return link + '/raw'
 
 async def paste(text):
     """Return an online bin of given text"""
