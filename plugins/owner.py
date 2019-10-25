@@ -3,7 +3,7 @@ import os
 import textwrap
 import traceback
 from contextlib import redirect_stdout
-from yaml import load as yaml_load
+from yaml import safe_load as yaml_load
 from yaml import dump as yaml_dump
 
 import discord
