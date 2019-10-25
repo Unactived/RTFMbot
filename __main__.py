@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from yaml import load as yaml_load
+from yaml import safe_load as yaml_load
 from os.path import isfile
 from sys import exit as sys_exit
 from shutil import copyfile
