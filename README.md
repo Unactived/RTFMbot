@@ -32,6 +32,7 @@ It provides some helpful tools:
   + C++ ([cppreference.com](https://en.cppreference.com/))
   + Haskell ([wiki.haskell.org](https://wiki.haskell.org))
   + Python ([python.org](https://python.org))
+  + Rust ([rust-lang.org](https://rust-lang.org))
 
   </details>
 
