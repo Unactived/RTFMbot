@@ -74,7 +74,8 @@ class Coding(commands.Cog):
         'c': _doc.c_doc,
         'cpp': _doc.cpp_doc,
         'haskell': _doc.haskell_doc,
-        'python': _doc.python_doc
+        'python': _doc.python_doc,
+        'rust': _doc.rust_doc
     }
 
     @commands.command(
