@@ -14,6 +14,7 @@ from bs4 import BeautifulSoup
 from bs4.element import NavigableString
 from discord.ext import commands
 from discord.ext.commands.cooldowns import BucketType
+from discord.utils import escape_mentions
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 import _ref, _doc
@@ -202,7 +203,7 @@ brief='Execute code in a given programming language'
                 lang = self.bot.default[lang]
             if not lang in self.bot.languages:
                 matches = '\n'.join([language for language in self.bot.languages if lang in language][:10])
-                lang = lang.replace('`', '\`')
+                lang = escape_mentions(lang)
                 message = f"`{lang}` not available."
                 if matches:
                     message = message + f" Did you mean:\n{matches}"
