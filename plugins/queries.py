@@ -55,7 +55,8 @@ class Coding(commands.Cog):
         'cs': 'using System;class Program {static void Main(string[] args) {code}}',
         'java': 'public class Main {public static void main(String[] args) {code}}',
         'rust': 'fn main() {code}',
-        'd': 'import std.stdio; void main(){code}'
+        'd': 'import std.stdio; void main(){code}',
+        'kotlin': 'fun main() {code}'
     }
 
     referred = {
