@@ -120,7 +120,7 @@ async def haskell_doc(ctx, text: str):
             await ctx.send(embed=emb)
 
 async def rust_doc(ctx, text: str):
-    """Filters python.org results based on your query"""
+    """Filters doc.rust-lang.org results based on your query"""
 
     text = text.strip('`')
     if text.startswith("std::"):
