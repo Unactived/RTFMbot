@@ -14,3 +14,4 @@ PyYAML==3.13
 six==1.11.0
 websockets==6.0
 yarl==1.2.6
+python-dateutil==2.8.1
