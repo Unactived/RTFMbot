@@ -106,19 +106,26 @@ brief='Execute code in a given programming language'
         # Powered by tio.run
 
         options = {
-            'stats': False,
-            'wrapped': False
+            '--stats': False,
+            '--wrapped': False
         }
 
         lang = language.strip('`').lower()
-        code = code.split(' ')
 
-        for i, option in enumerate(options):
-            if f'--{option}' in code[:len(options) - i]:
+        optionsAmount = len(options)
+
+        # Setting options and removing them from the beginning of the command
+        # options may be separated by any single whitespace, which we keep in the list
+        code = re.split(r'(\s)', code, maxsplit=optionsAmount)
+
+        for option in options:
+            if option in code[:optionsAmount*2]:
                 options[option] = True
-                code.remove(f'--{option}')
+                i = code.index(option)
+                code.pop(i)
+                code.pop(i) # remove following whitespace character
 
-        code = ' '.join(code)
+        code = ''.join(code)
 
         compilerFlags = []
         commandLineOptions = []
@@ -210,7 +217,7 @@ brief='Execute code in a given programming language'
 
                 return await ctx.send(message)
 
-            if options['wrapped']:
+            if options['--wrapped']:
                 if not (any(map(lambda x: lang.split('-')[0] == x, self.wrapping))) or lang in ('cs-mono-shell', 'cs-csi'):
                     return await ctx.send(f'`{lang}` cannot be wrapped')
 
@@ -223,7 +230,7 @@ brief='Execute code in a given programming language'
 
             result = await tio.send()
 
-            if not options['stats']:
+            if not options['--stats']:
                 try:
                     start = result.rindex("Real time: ")
                     end = result.rindex("%\nExit code: ")
