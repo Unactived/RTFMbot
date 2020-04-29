@@ -1,9 +1,9 @@
-aiohttp==3.4.4
+aiohttp<3.7.0,>=3.6.0
 async-timeout==3.0.1
 attrs==18.2.0
 beautifulsoup4==4.6.3
 chardet==3.0.4
-discord==1.0.1
+discord
 idna==2.7
 idna-ssl==1.1.0
 lxml==4.2.5
@@ -11,7 +11,7 @@ markdownify==0.4.1
 multidict==4.5.1
 py-stackexchange==2.2.7
 PyYAML==3.13
-six==1.11.0
+six
 websockets==6.0
 yarl==1.2.6
 python-dateutil==2.8.1
