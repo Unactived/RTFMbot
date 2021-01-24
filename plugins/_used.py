@@ -43,7 +43,7 @@ async def paste(text):
             return f'https://hastebin.com/{response[8:-2]}'
 
         # Rollback bin
-        post = await aioclient.post("https://bin.drlazor.be", data={'val':text})
+        post = await aioclient.post("https://bin.readthedocs.fr", data={'code':text, 'lang':'txt'})
         if post.status == 200:
             return post.url
 
