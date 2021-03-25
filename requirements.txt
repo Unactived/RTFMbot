@@ -10,7 +10,7 @@ lxml==4.2.5
 markdownify==0.4.1
 multidict==4.5.1
 py-stackexchange==2.2.7
-PyYAML==3.13
+PyYAML==5.4
 six
 websockets==6.0
 yarl==1.2.6
