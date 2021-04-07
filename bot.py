@@ -25,7 +25,7 @@ description = "A discord bot to help you in your daily programming discord life"
 async def log_guilds(bot, guild, joined: bool):
     """
     Logs guilds adding/kicking the bot in the support server
-    
+
     """
     if bot.user.id != bot.config['ID']:
         # true RTFM
@@ -42,7 +42,7 @@ async def log_guilds(bot, guild, joined: bool):
     await logsChannel.send(embed=emb)
 
 
-class RTFM(commands.Bot):
+class RTFM(commands.AutoShardedBot):
     def __init__(self, config):
         super().__init__(command_prefix=_prefix_callable,
                          description=description)
