@@ -29,13 +29,12 @@ class Background(commands.Cog):
                 languages = tuple(sorted(json.loads(await response.text())))
 
                 # Rare reassignments
-                if self.bot.languages != languages:
-                    self.bot.languages = languages
+		self.bot.languages = languages if self.bot.languages != languages else self.bot.languages
 
     @tasks.loop(hours=1)
     async def update_dbl_count(self):
         guildCount = len(self.guilds)
-        usersCount = sum([guild.member_count for guild in self.guilds])
+        usersCount = len([member for member in self.get_all_members()])
 
         lists_payloads = (p for p in [
             {'server_count': guildCount},

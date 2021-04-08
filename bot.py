@@ -15,7 +15,7 @@ extensions = (
 )
 
 def _prefix_callable(bot, message):
-    base = [f'<@!{bot.user.id}> ', f'<@{bot.user.id}> ', bot.config['PREFIX']]
+    base = [bot.user.mention, bot.config['PREFIX']]
     # current = utils.get_guild_attr(message.guild, 'prefix')
     # base.append(current)
     return base
