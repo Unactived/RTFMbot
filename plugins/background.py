@@ -15,8 +15,8 @@ class Background(commands.Cog):
                 # url: headers
                 (f'https://top.gg/api/bots/{bot.config["ID"]}/stats',                 {'Authorization' : bot.config['DB_TOKEN']}),
                 (f'https://discords.com/bots/api/bot/{bot.config["ID"]}',             {'Authorization' : bot.config['BFD_TOKEN']}),
-                (f'https://discord.bots.gg/api/v1/bots/{bot.config["ID"]}/stats',     {'Authorization' : bot.config['DBGG_TOKEN'], 'Content-Type': 'application/json'}),
-                (f'https://discordbotlist.com/api/v1/bots/{bot.config["ID"]}/stats',  {'Authorization' : bot.config['DBL_TOKEN'], 'Content-Type': 'application/json'})
+                (f'https://discord.bots.gg/api/v1/bots/{bot.config["ID"]}/stats',     {'Authorization' : bot.config['DBGG_TOKEN']}),
+                (f'https://discordbotlist.com/api/v1/bots/{bot.config["ID"]}/stats',  {'Authorization' : bot.config['DBL_TOKEN']})
             )
             self.update_dbl_count.start()
 
@@ -35,9 +35,9 @@ class Background(commands.Cog):
     @tasks.loop(minutes=30.0)
     async def update_dbl_count(self):
         # grouped to avoid doing it ~4 times and maintain same stats among websites
-        guildCount = len(self.guilds)
-        usersCount = sum([guild.member_count for guild in self.guilds])
-        shardCount = self.shard_count
+        guildCount = len(self.bot.guilds)
+        usersCount = sum([guild.member_count for guild in self.bot.guilds])
+        shardCount = self.bot.shard_count
 
         lists_payloads = (p for p in [
             {'server_count': guildCount, 'shard_count': shardCount},
