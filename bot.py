@@ -1,23 +1,25 @@
 import asyncio
 import sys
+import traceback
 
 import discord
+import aiohttp
 import json
 from discord.ext import commands
-from yaml import safe_load as yaml_load
 
 extensions = (
     'plugins.owner',
     'plugins.queries',
     'plugins.misc',
     'plugins.tools',
+    'plugins.manage',
     'plugins.error_handler'
 )
 
 def _prefix_callable(bot, message):
-    base = [f'<@!{bot.user.id}> ', f'<@{bot.user.id}> ', bot.config['PREFIX']]
-    # current = utils.get_guild_attr(message.guild, 'prefix')
-    # base.append(current)
+    base = [f'<@!{bot.user.id}> ', f'<@{bot.user.id}> ']
+    base.append(bot.prefixes.get(message.guild.id) or bot.config['PREFIX'])
+
     return base
 
 description = "A discord bot to help you in your daily programming discord life"
@@ -43,46 +45,85 @@ async def log_guilds(bot, guild, joined: bool):
 
 
 class RTFM(commands.AutoShardedBot):
-    def __init__(self, config):
-        super().__init__(command_prefix=_prefix_callable,
-                         description=description)
+    def __init__(self, config, db):
+        allowed_mentions = discord.AllowedMentions(roles=False, everyone=False, replied_user=False)
+
+        intents = discord.Intents(
+            guilds=False,  # don't have it anyway
+            members=False, # don't have it anyway
+            bans=False,
+            voice_states=False,
+            messages=True,
+            integrations=True
+        )
 
         self.config = config
-        self.remove_command('help')
-        self.languages = ()
 
-        with open('default_langs.yml', 'r') as file:
-            self.default = yaml_load(file)
+        super().__init__(
+            command_prefix=_prefix_callable,
+            description=description,
+            allowed_mentions=allowed_mentions,
+            activity=discord.Game(name=self.config['STATUS']),
+            status=self.config['STATUS_TYPE'],
+            intents=intents
+        )
+
+        self.db = db
+
+        G,U = self.loop.run_until_complete(self.db.init())
+
+        self.blacklist = {u['id'] for u in U if u['blacklisted']}
+        self.blacklist.update({g['id'] for g in G  if g['blacklisted']})
+
+        self.prefixes = {g['id']: g['prefix'][:-1] for g in G} # see manage
+
+        self.remove_command('help')
+        with open('languages.txt', 'r') as file:
+            self.languages = set(file.read().split('\n'))
 
         self.repo = "https://github.com/FrenchMasterSword/RTFMbot/"
 
         for extension in extensions:
             try:
                 self.load_extension(extension)
-            except Exception as e:
-                print(f"Couldn't load the following extension : {extension} ; :{e}", file=sys.stderr)
+            except:
+                print(f"Couldn't load the following extension : {extension} ; :\n{traceback.format_exc()}", file=sys.stderr)
+
+        self.session = aiohttp.ClientSession(loop=self.loop)
+
+        self.loop.create_task(self.post_login())
 
     async def on_ready(self):
         print(f'Logged in as {self.user.name} ; ID : {self.user.id}')
         print('-------------------------------------------\n')
-        await self.change_presence(status=self.config['STATUS_TYPE'],
-                                   activity=discord.Game(name=self.config['STATUS']))
+
+    async def post_login(self):
+        """Start things after the first bot's login if they need it, like tasks"""
+
+        await self.wait_until_ready()
+
         self.load_extension('plugins.background')
 
     async def on_resumed(self):
         print(f'\n[*] {self.user} resumed...')
 
     async def on_message(self, message):
-        if type(message.channel) == discord.channel.DMChannel or message.author.bot:
+        # Disable DMs, don't answer bots, ignore blacklisteds
+        if message.guild is None or message.author.bot or message.author.id in self.blacklist:
             return
 
         await self.process_commands(message)
 
     async def on_guild_join(self, guild):
+        if guild.id in self.blacklist:
+            return await guild.leave()
+
         await log_guilds(self, guild, True)
 
     async def on_guild_remove(self, guild):
-        await log_guilds(self, guild, False)
+        # don't log departures from blacklisting
+        if not guild.id in self.blacklist:
+            await log_guilds(self, guild, False)
 
     async def close(self):
         await super().close()

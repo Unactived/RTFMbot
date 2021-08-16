@@ -4,8 +4,12 @@ from yaml import safe_load as yaml_load
 from os.path import isfile
 from sys import exit as sys_exit
 from shutil import copyfile
+import asyncio
+import asyncpg
+import traceback
 
 from bot import RTFM
+from db import Database
 
 CONFIG_FILE = 'config.yml'
 CONFIG_TEMPLATE = 'config_example.yml'
@@ -27,10 +31,16 @@ with open(CONFIG_FILE) as file:
         sys_exit(1)
 
 def run_bot():
-    # loop = asyncio.get_event_loop()
-    # log = logging.getLogger()
 
-    bot = RTFM(config)
+    try:
+        db = Database(config['POSTGRESQL'])
+    except:
+        traceback.print_exc()
+        print('Could not set up PostgreSQL, exiting.')
+        sys_exit(1)
+
+    bot = RTFM(config, db)
+
     bot.run(bot.config['BOT_TOKEN'])
 
 

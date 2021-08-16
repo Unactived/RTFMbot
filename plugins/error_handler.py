@@ -26,7 +26,7 @@ class ErrorHandler(commands.Cog):
             return
         elif isinstance(error, commands.MissingRequiredArgument):
             name = "SyntaxError"
-            content = f"Command `{ctx.command.name}` missing 1 required argument: `{error.param.name}`"
+            content = f"Command `{ctx.command.name}` missing a required argument: `{error.param.name}`"
         elif isinstance(error, commands.BadArgument):
             name = "TypeError"
             content = str(error.args[0])

@@ -22,15 +22,14 @@ class Background(commands.Cog):
 
     @tasks.loop(hours=1.0)
     async def update_languages(self):
-        async with aiohttp.ClientSession() as client_session:
-            async with client_session.get(self.languages_url) as response:
-                if response.status != 200:
-                    print(f"Couldn't reach languages.json (status code: {response.status}).")
-                languages = tuple(sorted(json.loads(await response.text())))
+        async with self.bot.session.get(self.languages_url) as response:
+            if response.status != 200:
+                print(f"Couldn't reach languages.json (status code: {response.status}).")
+            languages = set(json.loads(await response.text()))
 
-                # Rare reassignments
-                if self.bot.languages != languages:
-                    self.bot.languages = languages
+            # Rare reassignments
+            if self.bot.languages != languages:
+                self.bot.languages = languages
 
     @tasks.loop(minutes=30.0)
     async def update_dbl_count(self):
@@ -46,9 +45,8 @@ class Background(commands.Cog):
             {'guilds':       guildCount, 'users': usersCount}
         ])
 
-        async with aiohttp.ClientSession() as aioclient:
-            for url, headers in self.lists_settings:
-                await aioclient.post(url, data=next(lists_payloads), headers=headers)
+        for url, headers in self.lists_settings:
+            await self.bot.session.post(url, data=next(lists_payloads), headers=headers)
 
 def setup(bot):
     bot.add_cog(Background(bot))

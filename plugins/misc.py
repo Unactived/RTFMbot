@@ -102,7 +102,7 @@ class Misc(commands.Cog):
 
         emb.set_thumbnail(url='attachment://RTFM_logo.png')
         emb.set_footer(text= f"Coded in Python 3 by {info.owner.name}", 
-            icon_url=info.owner.avatar_url)
+            icon_url=info.owner.avatar.url)
 
         implementation = platform.python_implementation()
         pyVersion = platform.python_version()

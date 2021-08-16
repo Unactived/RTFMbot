@@ -2,6 +2,7 @@ import io
 import os
 import textwrap
 import traceback
+import typing
 from contextlib import redirect_stdout
 from yaml import safe_load as yaml_load
 from yaml import dump as yaml_dump
@@ -16,6 +17,59 @@ class Owner(commands.Cog):
 
     async def cog_check(self, ctx):
         return await self.bot.is_owner(ctx.author)
+
+    @commands.group(invoke_without_command=True, hidden=True)
+    async def blacklist(self, ctx, to_blacklist: typing.Union[discord.User, discord.Guild, None]):
+        """Blacklist a user or server from using the bot."""
+
+        if to_blacklist is None:
+            return await ctx.send("Could not determine target.")
+
+        self.bot.blacklist.add(to_blacklist.id)
+
+        if isinstance(to_blacklist, (discord.User, discord.Member)):
+            await self.bot.db.set_in_user(to_blacklist.id, 'blacklisted', True)
+            return await ctx.send(f"Blacklisted user {str(to_blacklist)}.")
+
+        await self.bot.db.set_in_guild(to_blacklist.id, 'blacklisted', True)
+        await ctx.send(f"Blacklisted server {str(to_blacklist)}. Leaving.")
+
+        return await to_blacklist.leave()
+
+    @blacklist.command(hidden=True)
+    async def remove(self, ctx, to_remove: typing.Union[discord.User, int]):
+        """Remove a user or server from the bot's blacklist."""
+
+        # We cannot convert (typehint) to a discord.Guild
+        # since the bot leaves blacklisted guilds
+
+        if isinstance(to_remove, (discord.User, discord.Member)):
+            id = to_remove.id
+            prefix = f'{str(to_remove)}, '
+        else:
+            id = to_remove
+            prefix = ''
+
+
+        if not id in self.bot.blacklist:
+            return await ctx.send(prefix + f'ID: {id} not in blacklist.')
+
+        self.bot.blacklist.remove(id)
+
+        if prefix:
+            await self.bot.db.set_in_user(id, 'blacklisted', False)
+            return await ctx.send(prefix + f'removed from blacklist.')
+
+        # We need to determine if the integer obtained is the id of a guild or a user we no longer see
+
+        is_user = await self.bot.db.get_from_user(id, 'id') # an int or None
+
+        if is_user:
+            await self.bot.db.set_in_user(id, 'blacklisted', False)
+            return await ctx.send(f'User with ID: {id} removed from blacklist.')
+
+        await self.bot.db.set_in_guild(id, 'blacklisted', False)
+        return await ctx.send(f'Server with ID: {id} removed from blacklist.')
 
     @commands.command(aliases=['streaming', 'listening', 'watching'], hidden=True)
     async def playing(self, ctx, media=""):
