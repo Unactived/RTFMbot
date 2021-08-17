@@ -144,11 +144,18 @@ brief='Execute code in a given programming language'
             view = Refresh(self.bot, no_rerun)
 
             try:
-                await ctx.reply(output, view=view)
+                returned = await ctx.reply(output, view=view)
+                buttons = True
             except discord.HTTPException: # message deleted
-                await ctx.send(output, view=view)
+                returned = await ctx.send(output, view=view)
+                buttons = False
 
-        await view.wait()
+        if buttons:
+
+            await view.wait()
+
+            await returned.edit(view=None)
+            view.stop()
 
     @commands.command(aliases=['ref'])
     @typing

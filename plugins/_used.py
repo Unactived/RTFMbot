@@ -33,13 +33,42 @@ def prepare_payload(payload):
 
     return (language, text, False)
 
+async def get_message(interaction: discord.Interaction, fetch=False) -> discord.Message:
+    """Retrieve referenced message, trying cache first and handle deletion"""
+    ref = interaction.message.reference
+
+    if not fetch:
+        message = ref.resolved
+
+        if isinstance(message, discord.DeletedReferencedMessage):
+            return None
+
+        if message is not None:
+            return message
+
+    # message is None, means we have to fetch
+
+    try:
+        return await interaction.message.channel.fetch_message(ref.message_id)
+    except discord.errors.NotFound:
+        # message deleted
+        return None
+
 class RerunBtn(discord.ui.Button):
     def __init__(self, bot, **kwargs):
         super().__init__(**kwargs)
         self.bot = bot
 
     async def callback(self, interaction: discord.Interaction):
-        message = await interaction.message.channel.fetch_message(interaction.message.reference.message_id)
+        # We always fetch since we need an updated message.content
+        message = await get_message(interaction, fetch=True)
+
+        if message is None:
+            await interaction.response.send_message('No code to run since original message was deleted.', ephemeral=True)
+            return self.view.stop() # message won't come back
+
+        if interaction.user.id != message.author.id:
+            await interaction.response.send_message('Only the one who used the run command can use these buttons.', ephemeral=True)
 
         prefixes = [f'<@!{self.bot.user.id}> ', f'<@{self.bot.user.id}> ']
         prefixes.append(self.bot.prefixes.get(interaction.guild_id) or self.bot.config['PREFIX'])
@@ -61,7 +90,6 @@ class RerunBtn(discord.ui.Button):
         result = await execute_run(self.bot, language, text)
 
         await interaction.message.edit(content=result)
-        # self.stop()
 
 class Refresh(discord.ui.View):
     def __init__(self, bot, no_rerun, timeout=300):
@@ -75,6 +103,15 @@ class Refresh(discord.ui.View):
 
     @discord.ui.button(label='Delete', style=discord.ButtonStyle.grey, emoji='🗑')
     async def delete(self, button: discord.ui.Button, interaction: discord.Interaction):
+        message = await get_message(interaction)
+
+        if message is None:
+            await interaction.response.send_message('Cannot confirm right to deletion since original message was deleted.', ephemeral=True)
+            return self.stop()
+
+        if interaction.user.id != message.author.id:
+            return await interaction.response.send_message('Only the one who used the run command can use these buttons.', ephemeral=True)
+
         await interaction.message.delete()
         self.stop()
 
