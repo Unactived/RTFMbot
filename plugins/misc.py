@@ -117,14 +117,19 @@ class Misc(commands.Cog):
         if delta.minutes: uptime += f'{int(delta.minutes)} m, '
         if delta.seconds: uptime += f'{int(delta.seconds)} s, '
 
-        emb.add_field(name='Server count', value=str(len(self.bot.guilds)))
-        emb.add_field(name='Member count', value=str(sum([guild.member_count for guild in self.bot.guilds])))
+        hashes = os.popen('git log --oneline -3 --pretty=format:"%h"').read().split('\n')
+
+        changes = '\n'.join([f'[`{h}`]({self.bot.repo}commit/{h})' for h in hashes])
+
+        emb.add_field(name='Servers', value=str(len(self.bot.guilds)))
+        emb.add_field(name='Uptime', value=uptime[:-2])
+        emb.add_field(name='Latest changes', value=changes)
+
+        #emb.add_field(name='Member count', value=str(sum([guild.member_count for guild in self.bot.guilds])))
 
         emb.add_field(name='Python', value=f'Python {pyVersion} with {implementation}')
         emb.add_field(name='Discord.py version', value=libVersion)
-
         emb.add_field(name='Hosting', value=hosting)
-        emb.add_field(name='Uptime', value=uptime[:-2])
 
         emb.add_field(name='Links', value=links, inline=False)
 

@@ -35,14 +35,13 @@ class Background(commands.Cog):
     async def update_dbl_count(self):
         # grouped to avoid doing it ~4 times and maintain same stats among websites
         guildCount = len(self.bot.guilds)
-        usersCount = sum([guild.member_count for guild in self.bot.guilds])
         shardCount = self.bot.shard_count
 
         lists_payloads = (p for p in [
             {'server_count': guildCount, 'shard_count': shardCount},
             {'server_count': guildCount},
             {'guildCount':   guildCount, "shardCount": shardCount},
-            {'guilds':       guildCount, 'users': usersCount}
+            {'guilds':       guildCount}
         ])
 
         for url, headers in self.lists_settings:
