@@ -49,7 +49,7 @@ class RTFM(commands.AutoShardedBot):
         allowed_mentions = discord.AllowedMentions(roles=False, everyone=False, replied_user=False)
 
         intents = discord.Intents(
-            guilds=False,  # don't have it anyway
+            guilds=True,
             members=False, # don't have it anyway
             bans=False,
             voice_states=False,
