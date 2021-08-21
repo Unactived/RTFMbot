@@ -154,8 +154,12 @@ brief='Execute code in a given programming language'
 
             await view.wait()
 
-            await returned.edit(view=None)
-            view.stop()
+            try:
+                await returned.edit(view=None)
+                view.stop()
+            except:
+                # We deleted the message
+                pass
 
     @commands.command(aliases=['ref'])
     @typing
