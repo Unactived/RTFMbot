@@ -81,7 +81,7 @@ class RTFM(commands.AutoShardedBot):
         with open('languages.txt', 'r') as file:
             self.languages = set(file.read().split('\n'))
 
-        self.repo = "https://github.com/FrenchMasterSword/RTFMbot/"
+        self.repo = "https://github.com/Unactived/RTFMbot/"
 
         for extension in extensions:
             try:
