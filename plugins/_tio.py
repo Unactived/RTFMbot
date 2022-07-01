@@ -38,7 +38,7 @@ class Tio:
         self.request = zlib.compress(bytes_, 9)[2:-4]
 
     async def send(self):
-        async with aiohttp.ClientSession() as client_session:
+        async with aiohttp.ClientSession(headers={"Connection": "keep-alive"}) as client_session:
             async with client_session.post(self.backend, data=self.request) as res:
                 if res.status != 200:
                     raise aiohttp.HttpProcessingError(res.status)

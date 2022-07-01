@@ -79,7 +79,7 @@ class Misc(commands.Cog):
         bot.help_command = Help()
         bot.help_command.cog = self
 
-    def cog_unload(self):
+    async def cog_unload(self):
         # To keep a minimal help
         self.bot.help_command = self._original_help_command
 
@@ -149,5 +149,5 @@ class Misc(commands.Cog):
 
         await pinger.edit(content=None, embed=emb)
 
-def setup(bot):
-    bot.add_cog(Misc(bot))
+async def setup(bot):
+    await bot.add_cog(Misc(bot))

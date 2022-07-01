@@ -99,7 +99,7 @@ class Owner(commands.Cog):
     async def load(self, ctx, *, extension):
         """Loads a cog"""
         try:
-            self.bot.load_extension(f'plugins.{extension}')
+            await self.bot.load_extension(f'plugins.{extension}')
         except Exception:
             await ctx.send(f'```py\n{traceback.format_exc()}\n```')
         else:
@@ -109,7 +109,7 @@ class Owner(commands.Cog):
     async def unload(self, ctx, *, extension):
         """Unloads a cog"""
         try:
-            self.bot.unload_extension(f'plugins.{extension}')
+            await self.bot.unload_extension(f'plugins.{extension}')
         except Exception:
             await ctx.send(f'```py\n{traceback.format_exc()}\n```')
         else:
@@ -119,8 +119,8 @@ class Owner(commands.Cog):
     async def _reload(self, ctx, *, extension):
         """Reloads a module."""
         try:
-            self.bot.unload_extension(f'plugins.{extension}')
-            self.bot.load_extension(f'plugins.{extension}')
+            await self.bot.unload_extension(f'plugins.{extension}')
+            await self.bot.load_extension(f'plugins.{extension}')
         except Exception:
             await ctx.send(f'```py\n{traceback.format_exc()}\n```')
         else:
@@ -212,5 +212,5 @@ class Owner(commands.Cog):
                     self._last_result = ret
                     await ctx.send(f'```py\n{value}{ret}\n```')
 
-def setup(bot):
-    bot.add_cog(Owner(bot))
+async def setup(bot):
+    await bot.add_cog(Owner(bot))

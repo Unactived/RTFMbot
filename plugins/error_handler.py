@@ -56,5 +56,5 @@ class ErrorHandler(commands.Cog):
         else:
             print(traceback.format_exc())
 
-def setup(bot):
-    bot.add_cog(ErrorHandler(bot))
+async def setup(bot):
+    await bot.add_cog(ErrorHandler(bot))

@@ -45,5 +45,5 @@ class Manage(commands.Cog):
         await ctx.send(f'Prefix set to "{new_prefix}"')
 
 
-def setup(bot):
-    bot.add_cog(Manage(bot))
+async def setup(bot):
+    await bot.add_cog(Manage(bot))

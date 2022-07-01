@@ -5,7 +5,7 @@ from os.path import isfile
 from sys import exit as sys_exit
 from shutil import copyfile
 import asyncio
-import asyncpg
+import aiohttp
 import traceback
 
 from bot import RTFM
@@ -30,10 +30,10 @@ with open(CONFIG_FILE) as file:
         print('Discord token is missing in the configuration file, exiting.')
         sys_exit(1)
 
-def run_bot():
+async def run_bot():
 
     try:
-        db = Database(config['POSTGRESQL'])
+        db = await Database.create(config['POSTGRESQL'])
     except:
         traceback.print_exc()
         print('Could not set up PostgreSQL, exiting.')
@@ -41,8 +41,11 @@ def run_bot():
 
     bot = RTFM(config, db)
 
-    bot.run(bot.config['BOT_TOKEN'])
+    async with aiohttp.ClientSession() as session:
+        async with bot:
+            bot.session = session
+            await bot.start(bot.config['BOT_TOKEN'])
 
 
 if __name__ == '__main__':
-    run_bot()
+    asyncio.run(run_bot())

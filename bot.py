@@ -54,6 +54,7 @@ class RTFM(commands.AutoShardedBot):
             bans=False,
             voice_states=False,
             messages=True,
+            message_content=True,
             integrations=True
         )
 
@@ -70,39 +71,35 @@ class RTFM(commands.AutoShardedBot):
 
         self.db = db
 
-        G,U = self.loop.run_until_complete(self.db.init())
+        self.remove_command('help')
+
+        with open('languages.txt', 'r') as file:
+            self.languages = set(file.read().split('\n'))
+
+        self.repo = "https://github.com/Unactived/RTFMbot/"
+
+    async def on_ready(self):
+        print(f'Logged in as {self.user.name} ; ID : {self.user.id}')
+        print('-------------------------------------------\n')
+
+    async def setup_hook(self):
+        """Start things after the first bot's login if they need it, like tasks"""
+
+        G,U = await self.db.init()
 
         self.blacklist = {u['id'] for u in U if u['blacklisted']}
         self.blacklist.update({g['id'] for g in G  if g['blacklisted']})
 
         self.prefixes = {g['id']: g['prefix'][:-1] for g in G} # see manage
 
-        self.remove_command('help')
-        with open('languages.txt', 'r') as file:
-            self.languages = set(file.read().split('\n'))
-
-        self.repo = "https://github.com/Unactived/RTFMbot/"
 
         for extension in extensions:
             try:
-                self.load_extension(extension)
+                await self.load_extension(extension)
             except:
                 print(f"Couldn't load the following extension : {extension} ; :\n{traceback.format_exc()}", file=sys.stderr)
 
-        self.session = aiohttp.ClientSession(loop=self.loop)
-
-        self.loop.create_task(self.post_login())
-
-    async def on_ready(self):
-        print(f'Logged in as {self.user.name} ; ID : {self.user.id}')
-        print('-------------------------------------------\n')
-
-    async def post_login(self):
-        """Start things after the first bot's login if they need it, like tasks"""
-
-        await self.wait_until_ready()
-
-        self.load_extension('plugins.background')
+        await self.load_extension('plugins.background')
 
     async def on_resumed(self):
         print(f'\n[*] {self.user} resumed...')
@@ -128,5 +125,5 @@ class RTFM(commands.AutoShardedBot):
     async def close(self):
         await super().close()
 
-    def run(self, token):
-        super().run(token, reconnect=True)
+#    def run(self, token):
+#        super().run(token, reconnect=True)

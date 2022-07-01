@@ -83,5 +83,5 @@ class Tools(commands.Cog):
         await ctx.send(embed=emb)
 
 
-def setup(bot):
-    bot.add_cog(Tools(bot))
+async def setup(bot):
+    await bot.add_cog(Tools(bot))

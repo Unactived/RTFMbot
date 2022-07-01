@@ -1,12 +1,16 @@
-import asyncio
 import asyncpg
 from functools import partialmethod
 
 class Database:
-    def __init__(self, uri):
-        loop = asyncio.get_event_loop()
+    @classmethod
+    async def create(self, uri):
+        """Factory method to create an instance through an async context"""
 
-        self.pool = loop.run_until_complete(asyncpg.create_pool(uri))
+        self = Database()
+
+        self.pool = await asyncpg.create_pool(uri)
+
+        return self
 
     async def init(self):
 

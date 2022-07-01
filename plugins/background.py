@@ -1,6 +1,5 @@
 import json
 
-import aiohttp
 from discord.ext import commands, tasks
 
 class Background(commands.Cog):
@@ -47,5 +46,5 @@ class Background(commands.Cog):
         for url, headers in self.lists_settings:
             await self.bot.session.post(url, data=next(lists_payloads), headers=headers)
 
-def setup(bot):
-    bot.add_cog(Background(bot))
+async def setup(bot):
+    await bot.add_cog(Background(bot))
