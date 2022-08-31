@@ -54,7 +54,7 @@ class RTFM(commands.AutoShardedBot):
             bans=False,
             voice_states=False,
             messages=True,
-            message_content=True,
+            message_content=False,
             integrations=True
         )
 
