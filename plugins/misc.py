@@ -3,6 +3,7 @@ import platform
 import time
 from pkg_resources import get_distribution
 from psutil import Process
+from typing import Optional
 
 import discord
 from discord.ext import commands
@@ -10,11 +11,25 @@ from dateutil.relativedelta import relativedelta
 
 hidden_cogs = ('Owner', 'ErrorHandler', 'Background', 'Jishaku')
 
+
+
 class Help(commands.HelpCommand):
     """The bot's help command"""
 
     BLUE_RTFM = 0x1EDBF8
-    PREFIX = "do " # temporary
+
+    async def slash_command_callback(self, ctx: discord.Interaction, /, *, command_or_module: Optional[str] = None) -> None:
+        """Turn interactions into contexts so past implementations work, akin to hybrid commands"""
+
+        ctx = await commands.Context.from_interaction(ctx)
+        self.context = ctx
+
+        await self.command_callback(ctx, command=command_or_module)
+
+    def get_destination(self) -> discord.abc.Messageable:
+        # Return context so .reply() works on both Messageable regular and interaction-based contexts
+
+        return self.context
 
     async def command_not_found(self, string):
         return f'No command or cog named "{string}" found. Remember names are case-sensitive.'
@@ -23,7 +38,7 @@ class Help(commands.HelpCommand):
         mapping.pop(None)
         coglist = sorted([cog.qualified_name for cog in mapping if cog.qualified_name not in hidden_cogs])
 
-        description = f'**Prefix is `do` (space after)**\n```fix\nThere are {len(coglist)} modules```'
+        description = f'**Prefix is `/` or the bot\'s mention**\n```fix\nThere are {len(coglist)} modules```'
         lines = '\n'.join(coglist)
         cogs = f"```prolog\n{lines}```"
 
@@ -32,11 +47,11 @@ class Help(commands.HelpCommand):
         emb.add_field(name="Modules", value=cogs)
         emb.set_footer(text="Type do help <module> to see commands or do help <command>")
 
-        await self.get_destination().send(embed=emb)
+        await self.get_destination().reply(embed=emb)
 
     async def send_cog_help(self, cog):
         if cog.qualified_name in hidden_cogs:
-            return await self.get_destination().send(f'No command or cog called "{cog.qualified_name}" found. Remember names are case-sensitive.')
+            return await self.get_destination().reply(f'No command or cog called "{cog.qualified_name}" found. Remember names are case-sensitive.')
         commandsList = await self.filter_commands(cog.get_commands())
 
         emb = discord.Embed(title=f"Commands from {cog.qualified_name} module (online version)", colour=self.BLUE_RTFM,
@@ -51,15 +66,16 @@ class Help(commands.HelpCommand):
                     signature = command.help.split('\n')[0]
                 else:
                     signature = f'{command.qualified_name} {command.signature}'
-                doc += f'\n**Usage -** {self.PREFIX}{signature}'
+                doc += f'\n**Usage -** /{signature}'
 
             emb.add_field(name=command.name, value=doc, inline=False)
 
-        await self.get_destination().send(embed=emb)
+        await self.get_destination().reply(embed=emb)
 
     async def send_command_help(self, command):
+        # We partake in a mild amount of tomfoolery
         if command.hidden or command.cog.qualified_name in hidden_cogs:
-            return await self.get_destination().send(f'No command or cog called "{command.qualified_name}" found. Remember names are case-sensitive.')
+            return await self.get_destination().reply(f'No command or cog called "{command.qualified_name}" found. Remember names are case-sensitive.')
 
         description = command.help
         if not description.startswith(command.qualified_name):
@@ -68,7 +84,7 @@ class Help(commands.HelpCommand):
         emb = discord.Embed(title=f"Help for command {command.qualified_name} (online version)", colour=self.BLUE_RTFM,
         description=description, url=f'{self.cog.bot.repo}wiki/{command.cog.qualified_name}-module#{command.qualified_name}')
 
-        await self.get_destination().send(embed=emb)
+        await self.get_destination().reply(embed=emb)
 
 class Misc(commands.Cog):
     """About the bot and other things"""
@@ -79,11 +95,23 @@ class Misc(commands.Cog):
         bot.help_command = Help()
         bot.help_command.cog = self
 
+        # https://github.com/Rapptz/discord.py/blob/master/discord/app_commands/commands.py#L1579
+        bot.app_help_command = discord.app_commands.Command(
+            name="help",
+            description=bot.help_command.__doc__,
+            callback=bot.help_command.slash_command_callback,
+            parent=None,
+            nsfw=False,
+            extras={},
+        )
+
+        self.bot.tree.add_command(self.bot.app_help_command)
+
     async def cog_unload(self):
         # To keep a minimal help
         self.bot.help_command = self._original_help_command
 
-    @commands.command()
+    @commands.hybrid_command()
     async def info(self, ctx):
         """Print some info and useful links about the bot"""
 
@@ -133,14 +161,14 @@ class Misc(commands.Cog):
 
         emb.add_field(name='Links', value=links, inline=False)
 
-        await ctx.send(file=file, embed=emb)
+        await ctx.reply(file=file, embed=emb)
 
-    @commands.command()
-    async def ping(self, ctx):
+    @commands.hybrid_command()
+    async def ping(self, ctx: commands.Context):
         """Check how the bot is doing"""
 
         timePing = time.monotonic()
-        pinger = await ctx.send("Pinging...")
+        pinger = await ctx.reply("Pinging...")
         diff = '%.2f' % (1000 * (time.monotonic() - timePing))
 
         emb = discord.Embed()

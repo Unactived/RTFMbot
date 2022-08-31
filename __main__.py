@@ -44,6 +44,7 @@ async def run_bot():
     async with aiohttp.ClientSession() as session:
         async with bot:
             bot.session = session
+
             await bot.start(bot.config['BOT_TOKEN'])
 
 

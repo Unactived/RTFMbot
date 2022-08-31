@@ -1,4 +1,3 @@
-import asyncio
 import os
 import re
 import sys
@@ -6,19 +5,19 @@ import urllib.parse
 from io import BytesIO
 from hashlib import algorithms_available as algorithms
 
-import aiohttp
 import discord
 import stackexchange as se
 # from pytio import Tio, TioRequest
 from bs4 import BeautifulSoup
 from bs4.element import NavigableString
+#from discord import app_commands
 from discord.ext import commands
 from discord.ext.commands.cooldowns import BucketType
 # from discord.utils import escape_mentions
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 import _ref, _doc
-from _used import typing, get_raw, paste, Refresh, wrapping, prepare_payload, execute_run
+from _used import typing, get_raw, paste, Refresh, wrapping, prepare_payload, execute_run#, ModalRun
 # from _tio import Tio, TioRequest
 
 class Coding(commands.Cog):
@@ -68,8 +67,10 @@ class Coding(commands.Cog):
         'python': _doc.python_doc
     }
 
-    @commands.command(
+    @commands.hybrid_command(name='run',
 help='''run <language> [--wrapped] [--stats] <code>
+
+**Recommended: use @RTFM (the mention) as prefix for this command**
 
 for command-line-options, compiler-flags and arguments you may
 add a line starting with this argument, and after a space add
@@ -89,13 +90,14 @@ in a new hastebin and the link will be returned.
 
 When the code returns your output, you may delete it by clicking :wastebasket: in the following minute.
 Useful to hide your syntax fails or when you forgot to print the result.''',
-brief='Execute code in a given programming language'
+brief='''`Recommended: use @RTFM (the mention) as prefix for this command`
+Execute code in a given programming language'''
         )
-    async def run(self, ctx, *, payload=''):
+    async def message_run(self, ctx, *, payload: str = ''):
         """Execute code in a given programming language"""
 
         if not payload:
-            emb = discord.Embed(title='SyntaxError',description=f"Command `run` missing a required argument: `language`",colour=0xff0000)
+            emb = discord.Embed(title='SyntaxError',description="Command `run` missing a required argument: `language`",colour=0xff0000)
             return await ctx.send(embed=emb)
 
         no_rerun = True
@@ -138,8 +140,7 @@ brief='Execute code in a given programming language'
             if lang:
                 language = lang
 
-
-            output = await execute_run(self.bot, language, text)
+            output = await execute_run(self.bot, language, text, include_code=(ctx.interaction is not None))
 
             view = Refresh(self.bot, no_rerun)
 
@@ -161,9 +162,18 @@ brief='Execute code in a given programming language'
                 # We deleted the message
                 pass
 
-    @commands.command(aliases=['ref'])
+    # cf. ModalRun
+    # @app_commands.command(name='run')
+    # async def slash_run(self, interaction: discord.Interaction, *, payload: str = None):
+
+    #     if payload is not None:
+    #         return
+
+    #     await interaction.response.send_modal(ModalRun())
+
+    @commands.hybrid_command(aliases=['ref'])
     @typing
-    async def reference(self, ctx, language, *, query: str):
+    async def reference(self, ctx, language: str, *, query: str):
         """Returns element reference from given language"""
 
         lang = language.strip('`')
@@ -173,9 +183,9 @@ brief='Execute code in a given programming language'
 
         await self.referred[lang.lower()](ctx, query.strip('`'))
 
-    @commands.command(aliases=['doc'])
+    @commands.hybrid_command(aliases=['doc'])
     @typing
-    async def documentation(self, ctx, language, *, query: str):
+    async def documentation(self, ctx, language: str, *, query: str):
         """Returns element reference from given language"""
 
         lang = language.strip('`')
@@ -185,7 +195,7 @@ brief='Execute code in a given programming language'
 
         await self.documented[lang.lower()](ctx, query.strip('`'))
 
-    @commands.command()
+    @commands.hybrid_command()
     @typing
     async def man(self, ctx, *, page: str):
         """Returns the manual's page for a (mostly Debian) linux command"""
@@ -225,16 +235,16 @@ brief='Execute code in a given programming language'
             await ctx.send(embed=emb)
 
     @commands.cooldown(1, 8, BucketType.user)
-    @commands.command(aliases=['se'])
+    @commands.hybrid_command(aliases=['se'])
     @typing
-    async def stack(self, ctx, siteName, *, query: str):
-        """Queries given StackExchange website and gives you top results. siteName is case-sensitive."""
+    async def stack(self, ctx, site_name: str, *, query: str):
+        """Queries given StackExchange website and gives you top results. site_name is case-sensitive."""
 
-        if siteName[0].islower() or not siteName in dir(se):
-            await ctx.send(f"{siteName} does not appear to be in the StackExchange network."
+        if site_name[0].islower() or not site_name in dir(se):
+            await ctx.send(f"{site_name} does not appear to be in the StackExchange network."
                 " Check the case and the spelling.")
 
-        site = se.Site(getattr(se, siteName), self.bot.config['SE_KEY'])
+        site = se.Site(getattr(se, site_name), self.bot.config['SE_KEY'])
         site.impose_throttling = True
         site.throttle_stop = False
 
@@ -256,8 +266,8 @@ brief='Execute code in a given programming language'
         else:
             await ctx.send("No results")
 
-    @commands.command()
-    async def list(self, ctx, *, group=None):
+    @commands.hybrid_command()
+    async def list(self, ctx, *, group: str = None):
         """Lists available choices for other commands"""
 
         choices = {

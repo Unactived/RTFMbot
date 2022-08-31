@@ -10,7 +10,7 @@ class Tools(commands.Cog):
         self.bot = bot
         self.algos = sorted([h for h in hashlib.algorithms_available if h.islower()])
 
-    @commands.command()
+    @commands.hybrid_command()
     async def ascii(self, ctx, *, text: str):
         """Returns number representation of characters in text"""
 
@@ -20,7 +20,7 @@ class Tools(commands.Cog):
 
         await ctx.send(embed=emb)
 
-    @commands.command()
+    @commands.hybrid_command()
     async def unascii(self, ctx, *, text: str):
         """Reforms string from char codes"""
 
@@ -33,8 +33,8 @@ class Tools(commands.Cog):
         except ValueError as e:
             await ctx.send(f"Invalid sequence. Example usage : `{self.bot.config['PREFIX']}unascii 104 101 121`")
 
-    @commands.command()
-    async def byteconvert(self, ctx, value: int, unit='Mio'):
+    @commands.hybrid_command()
+    async def byteconvert(self, ctx, value: int, unit: str = 'Mio'):
         """Shows byte conversions of given value"""
 
         units = ('o', 'Kio', 'Mio', 'Gio', 'Tio', 'Pio', 'Eio', 'Zio', 'Yio')
@@ -52,8 +52,8 @@ class Tools(commands.Cog):
 
         await ctx.send(embed=emb)
 
-    @commands.command(name='hash')
-    async def _hash(self, ctx, algorithm, *, text: str):
+    @commands.hybrid_command(name='hash')
+    async def _hash(self, ctx, algorithm: str, *, text: str):
         """
         Hashes text with a given algorithm
         UTF-8, returns under hexadecimal form

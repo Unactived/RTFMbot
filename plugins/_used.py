@@ -22,13 +22,11 @@ with open('default_langs.yml', 'r') as file:
     default_langs = yaml_load(file)
 
 def prepare_payload(payload):
-    no_code = False
-
     try:
         language,text = re.split(r'\s+', payload, maxsplit=1)
     except ValueError:
         # single word : no code yet no file attached
-        emb = discord.Embed(title='SyntaxError',description=f"Command `run` missing a required argument: `code`",colour=0xff0000)
+        emb = discord.Embed(title='SyntaxError',description="Command `run` missing a required argument: `code`",colour=0xff0000)
         return ('', emb, True)
 
     return (language, text, False)
@@ -115,8 +113,25 @@ class Refresh(discord.ui.View):
         await interaction.message.delete()
         self.stop()
 
+# Kept here in case modals ever git gud
+# class ModalRun(discord.ui.Modal, title="Peak @RTFM user experience"):
+#     code = discord.ui.TextInput(label='Code', style=discord.TextStyle.long)
 
-async def execute_run(bot, language, code, rerun=False) -> tuple:
+#     async def on_submit(self, interaction: discord.Interaction):
+#         await interaction.response.send_message(f'Your code is {self.code}!', ephemeral=False)
+
+def too_long(string, include_code):
+    zwd = 4 * string.count('```')
+
+    # bound = 2000 - len('```p\n```') - zwd
+    # if include_code:
+    #     bound -= len('Code:``````\nOutput:')
+
+    bound = (1973 if include_code else 1992) - zwd
+
+    return len(string) > bound
+
+async def execute_run(bot, language, code, rerun=False, include_code=False) -> tuple:
     # Powered by tio.run
 
     options = {
@@ -232,7 +247,11 @@ async def execute_run(bot, language, code, rerun=False) -> tuple:
             # Too much output removes this markers
             pass
 
-    if len(result) > 1992 or result.count('\n') > 40:
+    tested = result
+    if include_code:
+        tested += code
+
+    if too_long(tested, include_code) or tested.count('\n') > 40:
         # If it exceeds 2000 characters (Discord longest message), counting ` and ph\n characters
         # Or if it floods with more than 40 lines
         # Create a hastebin and send it back
@@ -246,12 +265,20 @@ async def execute_run(bot, language, code, rerun=False) -> tuple:
         return output
 
     zero = '\N{zero width space}'
-    output = re.sub('```', f'{zero}`{zero}`{zero}`{zero}', result)
+    result = re.sub('```', f'{zero}`{zero}`{zero}`{zero}', result) # avoid breaking codeblocks 
 
     # p, as placeholder, prevents Discord from taking the first line
     # as a language identifier for markdown and remove it
+    output = f'```p\n{result}```'
 
-    return f'```p\n{output}```'
+    if include_code:
+        code = re.sub('```', f'{zero}`{zero}`{zero}`{zero}', code)
+
+        preambule = f'Code:```{code}```\nOutput:'
+
+        output = preambule + output
+
+    return output
 
 
 def get_raw(link):
@@ -285,7 +312,7 @@ def get_raw(link):
         return link + '/raw'
 
 async def paste(text):
-    """Return an online bin of given text"""
+    """Returns an online bin of given text"""
 
     async with aiohttp.ClientSession() as aioclient:
         post = await aioclient.post('https://hastebin.com/documents', data=text)
@@ -300,9 +327,15 @@ async def paste(text):
 
 
 def typing(func):
+    """Shows bot as typing for old text commands"""
+
     @functools.wraps(func)
     async def wrapped(*args, **kwargs):
         context = args[0] if isinstance(args[0], commands.Context) else args[1]
+
+        # Bot appears to be typing for a regular command, or defers appropriately if interaction, see
+        # https://discordpy.readthedocs.io/en/latest/ext/commands/api.html#discord.ext.commands.Context.typing
         async with context.typing():
             await func(*args, **kwargs)
+
     return wrapped

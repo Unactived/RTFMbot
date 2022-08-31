@@ -17,7 +17,7 @@ extensions = (
 )
 
 def _prefix_callable(bot, message):
-    base = [f'<@!{bot.user.id}> ', f'<@{bot.user.id}> ']
+    base = [f'<@!{bot.user.id}> ', f'<@{bot.user.id}> ', f'<@!{bot.user.id}>', f'<@{bot.user.id}>']
     base.append(bot.prefixes.get(message.guild.id) or bot.config['PREFIX'])
 
     return base
@@ -98,6 +98,9 @@ class RTFM(commands.AutoShardedBot):
                 await self.load_extension(extension)
             except:
                 print(f"Couldn't load the following extension : {extension} ; :\n{traceback.format_exc()}", file=sys.stderr)
+
+        # # DEVELOPMENT
+        # self.tree.copy_global_to(guild=discord.Object(id=380357709813252096))
 
         await self.load_extension('plugins.background')
 

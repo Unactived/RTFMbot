@@ -16,8 +16,8 @@ class Manage(commands.Cog):
 
         return ctx.author.guild_permissions.manage_guild
 
-    @commands.command()
-    async def setprefix(self, ctx, new_prefix):
+    @commands.hybrid_command()
+    async def setprefix(self, ctx, new_prefix: str):
         """
         Set the new bot's prefix. Use quotes to include spaces.
         e.g. `do setprefix "do "`

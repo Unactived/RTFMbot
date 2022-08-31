@@ -9,6 +9,7 @@ from yaml import dump as yaml_dump
 
 import discord
 from discord.ext import commands
+from discord.utils import escape_mentions
 
 class Owner(commands.Cog):
     def __init__(self, bot):
@@ -58,7 +59,7 @@ class Owner(commands.Cog):
 
         if prefix:
             await self.bot.db.set_in_user(id, 'blacklisted', False)
-            return await ctx.send(prefix + f'removed from blacklist.')
+            return await ctx.send(prefix + 'removed from blacklist.')
 
         # We need to determine if the integer obtained is the id of a guild or a user we no longer see
 
@@ -134,7 +135,7 @@ class Owner(commands.Cog):
     @commands.command(hidden=True)
     async def cogupdate(self, ctx):
         """Fetches and update cogs from github repo"""
-        os.system(f'./cogupdate.sh')
+        os.system('./cogupdate.sh')
 
     @commands.command(hidden=True)
     async def restart(self, ctx):
@@ -157,13 +158,30 @@ class Owner(commands.Cog):
             pass
         await ctx.send(text)
 
+    @commands.group(invoke_without_command=True, hidden=True)
+    async def sync(self, ctx):
+        """Syncs commands, global by default"""
+        await self.bot.tree.sync() # global
+        await ctx.send("Synced globally")
+
+    @sync.command(hidden=True)
+    async def guild(self, ctx, *, guild: discord.Guild):
+        """Syncs commands for a specific guild"""
+        await self.bot.tree.sync(guild=guild)
+        await ctx.send(f"Synced guild {escape_mentions(str(guild))}")
+
+    @sync.command(hidden=True)
+    async def here(self, ctx):
+        """Syncs commands for the guild where invoked"""
+        await self.bot.tree.sync(guild=ctx.guild)
+        await ctx.send(f"Synced guild {escape_mentions(str(ctx.guild))}")
+
     def _clean_code(self, code):
         # Markdown py ; not python
         if code.startswith('```') and code.endswith('```'):
-            return '\n'.join(code.split('\n')[1:-1])
+            return code[3:-3]
         return code.strip('`\n')
 
-    @commands.is_owner()
     @commands.command(name='eval', hidden=True)
     async def _eval(self, ctx, *, code: str):
         """Eval some code"""

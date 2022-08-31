@@ -1,5 +1,5 @@
 beautifulsoup4
-git+https://github.com/Rapptz/discord.py@master
+discord.py
 lxml
 markdownify
 py-stackexchange
