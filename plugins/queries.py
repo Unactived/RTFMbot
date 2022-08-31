@@ -91,7 +91,8 @@ in a new hastebin and the link will be returned.
 When the code returns your output, you may delete it by clicking :wastebasket: in the following minute.
 Useful to hide your syntax fails or when you forgot to print the result.''',
 brief='''`Recommended: use @RTFM (the mention) as prefix for this command`
-Execute code in a given programming language'''
+Execute code in a given programming language''',
+description='Execute code in a given programming language'
         )
     async def message_run(self, ctx, *, payload: str = ''):
         """Execute code in a given programming language"""
