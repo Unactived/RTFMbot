@@ -50,6 +50,7 @@ It provides some helpful tools:
     + Standard help
     + Standard guides
   + SQL ([sqltutorial.org](https://www.sqltutorial.org))
+  + Learn SQL in Detail ([Scaler Topics](https://www.scaler.com/topics/sql/))
 
   </details>
 
